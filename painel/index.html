@@ -48,16 +48,22 @@
   .i { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
   /* cabeçalho */
-  header { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  /* geometria única nos dois temas: o tema só troca cores, fontes e sombras */
+  header {
+    display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between;
+    /* faixa de ponta a ponta no topo */
+    margin: -40px calc(50% - 50vw) 28px; padding: 16px calc(50vw - 50% + 28px);
+    background: rgba(255,255,255,.025); border-bottom: 1px solid var(--line);
+  }
   .marca { display: flex; align-items: center; gap: 22px; min-width: 0; }
   .marca .pulso { width: 64px; height: 44px; }
-  h1 { font-size: clamp(24px, 3vw, 34px); margin: 0; letter-spacing: -.02em; font-weight: 700; }
-  .sub { color: var(--muted); font-size: 15px; margin-top: 4px; }
+  h1 { font-size: clamp(22px, 2.6vw, 28px); line-height: 1.5; margin: 0; letter-spacing: -.01em; font-weight: 700; }
+  .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
   .acoes { display: flex; gap: 10px; flex-wrap: wrap; }
   .btn {
-    display: inline-flex; align-items: center; gap: 10px; font: inherit; font-weight: 600; font-size: 14.5px;
+    display: inline-flex; align-items: center; gap: 10px; font: inherit; font-weight: 600; font-size: 14px; line-height: 21px;
     color: var(--text); background: rgba(255,255,255,.04); border: 1px solid var(--line);
-    padding: 12px 18px; border-radius: 12px; cursor: pointer; transition: background .15s, border-color .15s;
+    padding: 10px 16px; border-radius: 12px; cursor: pointer; transition: background .15s, border-color .15s;
   }
   .btn svg { width: 20px; height: 20px; }
   .btn:hover:not(:disabled) { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
@@ -71,14 +77,14 @@
   .indicadores {
     display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 26px;
     background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-    border: 1px solid var(--line); border-radius: 22px; padding: 16px 8px; backdrop-filter: blur(6px);
+    border: 1px solid var(--line); border-radius: 22px; padding: 14px 8px; backdrop-filter: blur(6px);
   }
   .ind { flex: 1 1 150px; display: flex; align-items: center; gap: 14px; padding: 4px 20px; min-width: 0; position: relative; }
   .ind > div { min-width: 0; }
   .ind .rot { white-space: nowrap; }
   .ind + .ind::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: var(--line); }
   .ind svg { width: 28px; height: 28px; }
-  .ind .rot { color: var(--muted); font-size: 13.5px; }
+  .ind .rot { color: var(--muted); font-size: 13px; }
   .ind .val { font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ind .val.livre { color: var(--ok); font-size: 15px; }
   .c-yellow { color: #facc15; } .c-blue { color: #60a5fa; } .c-teal { color: #34d399; } .c-indigo { color: #818cf8; } .c-orange { color: #fb923c; } .c-cyan { color: #22d3ee; }
@@ -86,7 +92,7 @@
   /* grupos */
   .grupos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-bottom: 26px; }
   .grupo {
-    position: relative; overflow: hidden; border-radius: 22px; padding: 22px; border: 1px solid var(--line);
+    position: relative; overflow: hidden; border-radius: 22px; padding: 22px; border: 1px solid var(--line); border-top-width: 4px;
     background: linear-gradient(160deg, var(--g1), var(--g2) 60%);
   }
   .grupo::after { /* onda no canto superior direito */
@@ -99,9 +105,9 @@
   .grupo.rosa { --g1: rgba(219,39,119,.34); --g2: rgba(60,20,46,.62); --glow: rgba(244,114,182,.45); --tile: linear-gradient(135deg,#f9a8d4,#db2777); --acc: #f9a8d4; border-color: rgba(244,114,182,.32); }
   .grupo.roxo { --g1: rgba(124,58,237,.4); --g2: rgba(46,26,92,.6); --glow: rgba(167,139,250,.5); --tile: linear-gradient(135deg,#a78bfa,#7c3aed); --acc: #c4b5fd; border-color: rgba(167,139,250,.35); }
   .grupo .topo { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; position: relative; z-index: 1; }
-  .tile { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: var(--tile); color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.3); flex-shrink: 0; }
-  .tile svg { width: 28px; height: 28px; }
-  .grupo h2 { margin: 0; font-size: 21px; letter-spacing: -.01em; }
+  .tile { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--tile); color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.3); flex-shrink: 0; }
+  .tile svg { width: 24px; height: 24px; }
+  .grupo h2 { margin: 0; font-size: 19px; line-height: 1.5; letter-spacing: -.01em; }
   .grupo .desc { color: rgba(238,241,251,.72); font-size: 14px; }
   .itens { display: grid; gap: 12px; position: relative; z-index: 1; }
   /* lado a lado quando cabe; empilha quando a coluna fica estreita */
@@ -109,10 +115,10 @@
 
   .item {
     display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; font: inherit; color: var(--text);
-    background: rgba(8,12,28,.42); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 16px;
+    background: rgba(8,12,28,.42); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 14px;
     cursor: pointer; transition: transform .15s, border-color .15s, background .15s;
   }
-  .item:hover:not(:disabled) { border-color: var(--acc); background: rgba(8,12,28,.6); transform: translateY(-1px); }
+  .item:hover:not(:disabled) { border-color: var(--acc); background: rgba(8,12,28,.6); }
   .item:disabled { cursor: not-allowed; }
   .item:disabled .item-txt, .item:disabled .mini { opacity: .55; }
   .mini { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; color: var(--acc); background: rgba(255,255,255,.07); }
@@ -163,9 +169,9 @@
   pre.log { background: rgba(0,0,0,.35); color: #c7d2fe; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; height: 320px; overflow: auto; font: 12px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; margin: 12px 0 0; }
 
   /* seletor de ambiente (DEV / HML / PRD): DEV ciano, HML laranja, PRD azul */
-  .ambiente { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.04); }
+  .ambiente { display: inline-flex; align-items: center; gap: 4px; padding: 3px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.04); }
   .ambiente .rot-amb { color: var(--muted); font-size: 13px; font-weight: 600; padding: 0 8px 0 10px; }
-  .ambiente button { font: inherit; font-weight: 700; font-size: 13.5px; letter-spacing: .04em; color: var(--muted); background: transparent; border: 0; border-radius: 9px; padding: 7px 14px; cursor: pointer; }
+  .ambiente button { font: inherit; font-weight: 700; font-size: 13.5px; line-height: 20px; letter-spacing: .04em; color: var(--muted); background: transparent; border: 0; border-radius: 9px; padding: 6px 12px; cursor: pointer; }
   .ambiente button:hover:not(:disabled) { color: var(--text); background: rgba(255,255,255,.06); }
   .ambiente button[aria-checked="true"][data-amb="dev"] { color: #042f36; background: linear-gradient(135deg, #67e8f9, #06b6d4); }
   .ambiente button[aria-checked="true"][data-amb="hml"] { color: #3a1d05; background: linear-gradient(135deg, #fdba74, #f97316); }
@@ -190,7 +196,7 @@
   .toggle input:focus-visible ~ .trilho { outline: 2px solid #93c5fd; outline-offset: 2px; }
   /* engrenagem "Configurações" */
   .config { position: relative; }
-  .btn.icone-so { padding: 12px 13px; }
+  .btn.icone-so { padding: 10px 11px; }
   .btn.icone-so svg { transition: transform .3s; }
   .btn.icone-so[aria-expanded="true"] { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.22); }
   .btn.icone-so[aria-expanded="true"] svg { transform: rotate(60deg); }
@@ -252,6 +258,7 @@
   @media (max-width: 720px) {
     main { padding: 24px 16px 40px; }
     .grupos { grid-template-columns: 1fr; }
+    header { margin-top: -24px; padding: 14px calc(50vw - 50% + 16px); }
     .marca { gap: 14px; } .marca .pulso { width: 44px; }
     .acoes { width: 100%; } .acoes > .btn:not(.icone-so) { flex: 1; justify-content: center; padding: 11px 12px; }
     .ind { flex-basis: 50%; padding: 8px 10px; gap: 10px; }
@@ -289,20 +296,18 @@
 
   /* barra do topo menta, de ponta a ponta, como na Cockpit */
   html[data-tema="cockpit"] header {
-    background: #ccebdf; box-shadow: 0 1px 5px rgba(21,24,26,.1);
-    margin: -40px calc(50% - 50vw) 28px; padding: 16px calc(50vw - 50% + 28px);
+    background: #ccebdf; box-shadow: 0 1px 5px rgba(21,24,26,.1); border-bottom-color: rgba(21,24,26,.06);
   }
-  html[data-tema="cockpit"] h1 { font-size: clamp(22px, 2.6vw, 28px); letter-spacing: 0; color: #1d2125; }
-  html[data-tema="cockpit"] .sub { color: #4f575e; font-size: 14px; }
+  html[data-tema="cockpit"] h1 { color: #1d2125; }
+  html[data-tema="cockpit"] .sub { color: #4f575e; }
   html[data-tema="cockpit"] .marca .pulso path { stroke: var(--prim); }
 
   /* botões: brancos com contorno verde, cantos de 4px */
   html[data-tema="cockpit"] .btn {
-    color: var(--prim); background: #fff; border: 1px solid var(--prim); border-radius: 4px; padding: 10px 16px; font-size: 14px;
+    color: var(--prim); background: #fff; border-color: var(--prim); border-radius: 4px;
   }
   html[data-tema="cockpit"] .btn:hover:not(:disabled) { background: var(--prim-soft); border-color: var(--prim-hover); color: var(--prim-hover); }
   html[data-tema="cockpit"] .btn:disabled { opacity: .5; }
-  html[data-tema="cockpit"] .btn.icone-so { padding: 10px 11px; }
   html[data-tema="cockpit"] .btn.icone-so[aria-expanded="true"] { background: var(--prim-soft); border-color: var(--prim-hover); }
   html[data-tema="cockpit"] .btn.perigo { color: var(--err); border-color: #e9aaaa; background: #fff; }
   html[data-tema="cockpit"] .btn.perigo:hover:not(:disabled) { background: #faeaea; border-color: var(--err); color: var(--err); }
@@ -312,9 +317,9 @@
   html[data-tema="cockpit"] .btn.primario:hover { color: #fff; background: var(--prim-hover); }
 
   /* seletor de ambiente: segmentado branco (DEV ciano, HML laranja, PRD azul) */
-  html[data-tema="cockpit"] .ambiente { background: #fff; border: 1px solid #ced4da; border-radius: 4px; padding: 3px; }
+  html[data-tema="cockpit"] .ambiente { background: #fff; border-color: #ced4da; border-radius: 4px; }
   html[data-tema="cockpit"] .ambiente .rot-amb { color: var(--muted); }
-  html[data-tema="cockpit"] .ambiente button { border-radius: 3px; color: var(--muted); padding: 6px 12px; }
+  html[data-tema="cockpit"] .ambiente button { border-radius: 3px; color: var(--muted); }
   html[data-tema="cockpit"] .ambiente button:hover:not(:disabled) { background: #f1f3f5; color: var(--text); }
   html[data-tema="cockpit"] .ambiente button[aria-checked="true"][data-amb="dev"] { color: #fff; background: #0d8091; }
   html[data-tema="cockpit"] .ambiente button[aria-checked="true"][data-amb="hml"] { color: #fff; background: #f76707; }
@@ -324,9 +329,9 @@
   html[data-tema="cockpit"] .aviso { background: #fff6d8; border: 1px solid #fbd999; color: #8a6a00; border-radius: 4px; }
 
   /* resumo: como os cards de contagem do topo da Cockpit */
-  html[data-tema="cockpit"] .indicadores { background: #fff; border: 0; border-radius: 8px; box-shadow: var(--card-shadow); backdrop-filter: none; padding: 14px 8px; }
+  html[data-tema="cockpit"] .indicadores { background: #fff; border-color: #fff; border-radius: 8px; box-shadow: var(--card-shadow); backdrop-filter: none; }
   html[data-tema="cockpit"] .ind + .ind::before { background: var(--line); }
-  html[data-tema="cockpit"] .ind .rot { color: var(--muted); font-size: 13px; }
+  html[data-tema="cockpit"] .ind .rot { color: var(--muted); }
   html[data-tema="cockpit"] .ind .val { color: var(--text); }
   html[data-tema="cockpit"] .ind .val.livre { color: var(--prim); }
   html[data-tema="cockpit"] .c-yellow { color: #d08700; } html[data-tema="cockpit"] .c-blue { color: #1a79cb; }
@@ -334,19 +339,18 @@
   html[data-tema="cockpit"] .c-orange { color: #f76707; } html[data-tema="cockpit"] .c-cyan { color: #0d8091; }
 
   /* grupos: cards brancos com faixa de cor no topo */
-  html[data-tema="cockpit"] .grupo { background: #fff; border: 0; border-top: 4px solid var(--acc); border-radius: 8px; box-shadow: var(--card-shadow); }
+  html[data-tema="cockpit"] .grupo { background: #fff; border-color: #fff; border-top-color: var(--acc); border-radius: 8px; box-shadow: var(--card-shadow); }
   html[data-tema="cockpit"] .grupo::after { display: none; }
   html[data-tema="cockpit"] .grupo.azul { --acc: #1a79cb; --soft: #e8f2fa; }
   html[data-tema="cockpit"] .grupo.verde { --acc: #00995d; --soft: #e8f5e9; }
   html[data-tema="cockpit"] .grupo.laranja { --acc: #f76707; --soft: #fef0e6; }
   html[data-tema="cockpit"] .grupo.rosa { --acc: #d6336c; --soft: #fcebf1; }
   html[data-tema="cockpit"] .grupo.roxo { --acc: #7048e8; --soft: #f1edfd; }
-  html[data-tema="cockpit"] .tile { background: var(--soft); color: var(--acc); border-radius: 8px; box-shadow: none; width: 48px; height: 48px; }
-  html[data-tema="cockpit"] .tile svg { width: 24px; height: 24px; }
-  html[data-tema="cockpit"] .grupo h2 { font-size: 19px; color: #1d2125; }
+  html[data-tema="cockpit"] .tile { background: var(--soft); color: var(--acc); border-radius: 8px; box-shadow: none; }
+  html[data-tema="cockpit"] .grupo h2 { color: #1d2125; }
   html[data-tema="cockpit"] .grupo .desc { color: var(--muted); }
-  html[data-tema="cockpit"] .item { background: #fff; border: 1px solid var(--line-2); border-radius: 6px; color: var(--text); padding: 14px; }
-  html[data-tema="cockpit"] .item:hover:not(:disabled) { background: var(--soft); border-color: var(--acc); transform: none; }
+  html[data-tema="cockpit"] .item { background: #fff; border-color: var(--line-2); border-radius: 6px; color: var(--text); }
+  html[data-tema="cockpit"] .item:hover:not(:disabled) { background: var(--soft); border-color: var(--acc); }
   html[data-tema="cockpit"] .item:disabled { background: #f8f9fa; }
   html[data-tema="cockpit"] .mini, html[data-tema="cockpit"] .grupo.verde .mini, html[data-tema="cockpit"] .grupo.laranja .mini { background: var(--soft); color: var(--acc); border-radius: 6px; }
   html[data-tema="cockpit"] .item-motivo { color: var(--muted); }
@@ -358,7 +362,7 @@
   html[data-tema="cockpit"] .item.atual .seta { background: #cca035; color: #fff; }
 
   /* execução */
-  html[data-tema="cockpit"] .painel { background: #fff; border: 0; border-radius: 8px; box-shadow: var(--card-shadow); }
+  html[data-tema="cockpit"] .painel { background: #fff; border-color: #fff; border-radius: 8px; box-shadow: var(--card-shadow); }
   html[data-tema="cockpit"] .painel h3 { color: var(--muted); }
   html[data-tema="cockpit"] .status { background: #f1f3f5; color: var(--muted); }
   html[data-tema="cockpit"] .status.rodando { background: #fff6d8; color: #8a6a00; }
@@ -373,19 +377,19 @@
   html[data-tema="cockpit"] .print img { border-color: var(--line-2); border-radius: 6px; }
 
   /* toggle e menu de configurações */
-  html[data-tema="cockpit"] .toggle { background: #fff; border: 1px solid var(--line-2); border-radius: 4px; color: var(--text); }
+  html[data-tema="cockpit"] .toggle { background: #fff; border-color: var(--line-2); border-radius: 4px; color: var(--text); }
   html[data-tema="cockpit"] .toggle:hover { background: #f8f9fa; border-color: #ced4da; }
   html[data-tema="cockpit"] .trilho { background: #ced4da; }
   html[data-tema="cockpit"] .trilho::after { background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
   html[data-tema="cockpit"] .toggle input:checked ~ .trilho { background: var(--prim); }
   html[data-tema="cockpit"] .toggle input:checked ~ svg { color: var(--prim); }
-  html[data-tema="cockpit"] .menu-config { background: #fff; border: 1px solid var(--line-2); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); }
+  html[data-tema="cockpit"] .menu-config { background: #fff; border-color: var(--line-2); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); }
   html[data-tema="cockpit"] .menu-config .btn { border-color: var(--line-2); color: var(--text); }
   html[data-tema="cockpit"] .menu-config .btn svg { color: var(--prim); }
   html[data-tema="cockpit"] .menu-config .btn:hover:not(:disabled) { border-color: var(--prim); background: var(--prim-soft); color: var(--text); }
 
   /* guia "Como usar" */
-  html[data-tema="cockpit"] dialog.guia { background: #fff; border: 0; border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,.2); }
+  html[data-tema="cockpit"] dialog.guia { background: #fff; border-color: #fff; border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,.2); }
   html[data-tema="cockpit"] dialog.guia::backdrop { background: rgba(16,18,19,.45); backdrop-filter: none; }
   html[data-tema="cockpit"] .guia-topo h2 { color: var(--muted); }
   html[data-tema="cockpit"] .fechar { background: #fff; border-color: var(--line-2); border-radius: 4px; }
@@ -412,25 +416,25 @@
   html[data-tema="cockpit"] .tema-sel button { border-radius: 3px; }
   html[data-tema="cockpit"] .tema-sel button[aria-checked="true"] { background: var(--prim); }
 
-  @media (max-width: 720px) {
-    html[data-tema="cockpit"] header { margin-top: -24px; padding: 14px calc(50vw - 50% + 16px); }
-  }
 
   /* ===================================================================
      Ícones Font Awesome (o mesmo conjunto da Cockpit: FA 7, solid/regular)
      no tema Auditoria. O tema Dark mantém os ícones SVG.
      Se o Font Awesome não carregar (sem internet), volta para os SVG.
      =================================================================== */
-  .ico-fa { display: none; width: 1.25em; text-align: center; line-height: 1; flex-shrink: 0; }
+  .ico-fa { display: none; text-align: center; flex-shrink: 0; }
   html:not([data-tema="escuro"]):not([data-semfa]) .ico-fa { display: inline-block; }
   html:not([data-tema="escuro"]):not([data-semfa]) svg.ico-svg { display: none; }
-  .btn .ico-fa, .toggle .ico-fa, .tema-sel .rot .ico-fa { font-size: 17px; }
-  .ind .ico-fa { font-size: 24px; }
-  .tile .ico-fa { font-size: 21px; }
-  .mini .ico-fa { font-size: 17px; }
-  .seta .ico-fa { font-size: 15px; }
-  .fechar .ico-fa { font-size: 16px; }
-  .passo li .ico-fa { font-size: 13px; margin-top: 4px; color: var(--ok); }
+  /* mesma caixa do SVG que ele substitui (o layout não muda entre os temas) */
+  .ico-fa { width: var(--cx, 1em); height: var(--cx, 1em); line-height: var(--cx, 1em); }
+  .btn .ico-fa, .toggle .ico-fa, .tema-sel .rot .ico-fa { --cx: 20px; font-size: 17px; }
+  .ind .ico-fa { --cx: 28px; font-size: 24px; }
+  .tile .ico-fa { --cx: 24px; font-size: 21px; }
+  .mini .ico-fa { --cx: 22px; font-size: 17px; }
+  .seta .ico-fa { --cx: 18px; font-size: 15px; }
+  .fechar .ico-fa { --cx: 18px; font-size: 16px; }
+  .passo li .ico-fa { --cx: 16px; font-size: 13px; margin-top: 3px; color: var(--ok); }
+  @media (max-width: 720px) { .ind .ico-fa { --cx: 22px; font-size: 19px; } }
   .item.atual .seta .ico-fa { animation: gira 1s linear infinite; }
   html[data-tema="cockpit"] .passo-cab .tile { background: var(--prim-soft); color: var(--prim); }
 
