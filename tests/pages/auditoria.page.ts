@@ -4,6 +4,9 @@ import { URLS } from '../support/ambiente';
 import { escolherDataFlatpickr, limitesFlatpickr } from '../support/calendarios';
 import { MASSA, dadosDesospitalizacao, dadosServicoSocial, dadosHospitalista, dadosVisita, Inconformidade, hojeBR } from '../support/dados';
 
+/** Botão "próxima página" da paginação (OutSystems UI); fica disabled na última. */
+const PROXIMA_PAGINA = 'button[id$="btnNextPage"], button[aria-label*="next page" i]';
+
 /** Campo de data sem nenhum dia permitido pela tela (regra de negócio, não falha do teste). */
 export class DataIndisponivel extends Error {}
 
@@ -86,13 +89,15 @@ export class AuditoriaPage {
    * e as finalizadas saem da lista, então deve sobrar exatamente uma. O vínculo
    * exato com o SAE é validado depois pelo id da internação (Internacao_IdInternacaoAPI).
    */
-  /** Tela inicial, hospital de teste, filtrada pelo nome do paciente de teste. */
-  private async filtrarPacienteDeTeste() {
+  /**
+   * Tela inicial do hospital de teste com os Filtros Avançados limpos (eles ficam
+   * salvos na sessão) e, se pedido, o nome do paciente preenchido.
+   */
+  private async abrirInicioFiltrado(nome = '') {
     const page = this.page;
     await page.goto(URLS.auditoriaInicio, { waitUntil: 'networkidle' });
     await this.selecionarHospital();
 
-    // Os filtros ficam salvos na sessão: limpa antes de filtrar
     const campoNome = page.locator('#Input_Nome');
     // Painel lateral: fechado ele fica fora da tela, mas continua "visível" no DOM
     const painelAberto = () =>
@@ -105,12 +110,87 @@ export class AuditoriaPage {
     await page.locator('button', { hasText: 'Limpar filtros' }).filter({ visible: true }).click();
     await page.waitForLoadState('networkidle');
     await abrirPainel(); // "Limpar" pode fechar o painel
-    await campoNome.fill(MASSA.pacienteBusca);
+    if (nome) await campoNome.fill(nome);
     // espera a tabela recarregar (senão uma lista vazia "passa" antes da hora)
     const tabela = page.waitForResponse((r) => r.url().includes('DataActionBuscarDadosTabela'), { timeout: 90_000 });
     await page.locator('button', { hasText: 'Aplicar filtros' }).filter({ visible: true }).click();
     await tabela;
     await page.waitForLoadState('networkidle');
+    if (await painelAberto()) await page.locator('button', { hasText: 'Filtros Avançados' }).click().catch(() => {});
+  }
+
+  /** Tela inicial, hospital de teste, filtrada pelo nome do paciente de teste. */
+  private async filtrarPacienteDeTeste() {
+    await this.abrirInicioFiltrado(MASSA.pacienteBusca);
+  }
+
+  // ------------------------------------------------------ Filter chips
+  /** Rótulos da fileira principal de filter chips da tela inicial. */
+  static readonly FILTER_CHIPS = [
+    'Todos',
+    'Elegíveis desosp',
+    'CID inespecífico',
+    'Alta UTI',
+    '3+ dias UTI',
+    'Alta Ultrapassada',
+    'Solic. Avaliação hospitalista',
+  ];
+
+  /** Tela inicial do hospital de teste, sem filtros avançados; devolve o nome do hospital. */
+  async abrirInicioSemFiltros() {
+    await this.abrirInicioFiltrado();
+    return (await this.page.locator('.dropdown-display-content span').first().innerText()).trim();
+  }
+
+  /** Chip da fileira principal (o "Alta Ultrapassada" abre uma 2ª fileira com outro "Todos"). */
+  private chip(rotulo: string) {
+    return this.page
+      .locator('.filter-chip')
+      .filter({ has: this.page.locator('[id$="-Label"]').getByText(rotulo, { exact: true }) })
+      .first();
+  }
+
+  /**
+   * Clica no chip e conta as internações listadas, percorrendo todas as páginas.
+   * Devolve o número do chip, as linhas contadas e o total do rodapé da paginação.
+   */
+  async conferirChip(rotulo: string) {
+    const page = this.page;
+    const chip = this.chip(rotulo);
+    await expect(chip, `chip "${rotulo}"`).toBeVisible({ timeout: 30_000 });
+    if (!(await chip.evaluate((e) => e.classList.contains('is-active')))) {
+      const tabela = page.waitForResponse((r) => r.url().includes('DataActionBuscarDadosTabela'), { timeout: 90_000 });
+      await chip.click();
+      await tabela;
+      await page.waitForLoadState('networkidle');
+      await expect(chip).toHaveClass(/is-active/);
+    }
+    const numeroChip = Number((await chip.locator('.filter-chip__count').innerText()).trim());
+
+    const linhas = page.locator('table tbody tr').filter({ has: page.locator('a[href*="InternacaoId="]') });
+    const paginacao = page.locator('.pagination').first();
+    const totalRodape = async () =>
+      (await paginacao.count()) && (await paginacao.isVisible())
+        ? Number((await paginacao.getByTestId('Pagination.RecordsNumber').textContent())?.trim() || 0)
+        : null;
+
+    let contadas = 0;
+    const vistas = new Set<string>();
+    for (let pagina = 1; pagina <= 200; pagina++) {
+      const ids = await linhas.evaluateAll((trs) =>
+        trs.map((tr) => (tr.querySelector('a[href*="InternacaoId="]') as HTMLAnchorElement).href.split('InternacaoId=')[1]),
+      );
+      for (const id of ids) vistas.add(id);
+      contadas += ids.length;
+      const proxima = paginacao.locator(PROXIMA_PAGINA);
+      if (!(await paginacao.count()) || !(await proxima.count()) || (await proxima.first().isDisabled())) break;
+      const tabela = page.waitForResponse((r) => r.url().includes('DataActionBuscarDadosTabela'), { timeout: 90_000 });
+      await proxima.first().click();
+      await tabela;
+      await page.waitForLoadState('networkidle');
+      await expect(paginacao).toHaveAttribute('data-selectedpage', String(pagina + 1));
+    }
+    return { numeroChip, contadas, distintas: vistas.size, totalRodape: await totalRodape() };
   }
 
   /** Linha da internação pelo InternacaoId (os links do menu terminam com ele). */

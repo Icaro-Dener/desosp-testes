@@ -89,6 +89,7 @@
   .grupo.azul { --g1: rgba(37,99,235,.38); --g2: rgba(23,37,84,.55); --glow: rgba(96,165,250,.45); --tile: linear-gradient(135deg,#60a5fa,#3b82f6); --acc: #93c5fd; border-color: rgba(96,165,250,.35); }
   .grupo.verde { --g1: rgba(13,148,136,.36); --g2: rgba(10,47,52,.6); --glow: rgba(45,212,191,.4); --tile: linear-gradient(135deg,#34d399,#14b8a6); --acc: #5eead4; border-color: rgba(45,212,191,.3); }
   .grupo.laranja { --g1: rgba(194,108,40,.32); --g2: rgba(40,28,30,.7); --glow: rgba(251,146,60,.5); --tile: linear-gradient(135deg,#fdba74,#f97316); --acc: #fdba74; border-color: rgba(251,146,60,.3); }
+  .grupo.rosa { --g1: rgba(219,39,119,.34); --g2: rgba(60,20,46,.62); --glow: rgba(244,114,182,.45); --tile: linear-gradient(135deg,#f9a8d4,#db2777); --acc: #f9a8d4; border-color: rgba(244,114,182,.32); }
   .grupo.roxo { --g1: rgba(124,58,237,.4); --g2: rgba(46,26,92,.6); --glow: rgba(167,139,250,.5); --tile: linear-gradient(135deg,#a78bfa,#7c3aed); --acc: #c4b5fd; border-color: rgba(167,139,250,.35); }
   .grupo .topo { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; position: relative; z-index: 1; }
   .tile { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: var(--tile); color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.3); flex-shrink: 0; }
@@ -273,6 +274,7 @@
   <symbol id="i-servidor" viewBox="0 0 24 24"><rect class="i" x="3" y="4" width="18" height="7" rx="2"/><rect class="i" x="3" y="13" width="18" height="7" rx="2"/><path class="i" d="M7 7.5h.01M7 16.5h.01"/></symbol>
   <symbol id="i-olho" viewBox="0 0 24 24"><path class="i" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle class="i" cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-escudo" viewBox="0 0 24 24"><path class="i" d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/><path class="i" d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-funil" viewBox="0 0 24 24"><path class="i" d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><circle class="i" cx="12" cy="12" r="9"/><path class="i" d="m10 8.5 5.5 3.5-5.5 3.5z"/></symbol>
 </svg>
 
@@ -403,6 +405,7 @@ const NOMES_ANOTACAO = {
   visita: 'Avaliação (marcador)', 'sae-visita': 'Avaliação no SAE',
   inconformidade: 'Inconformidades (marcador)', 'sae-inconformidade': 'Inconformidades no SAE',
   'retorno-visita': 'Retorno (Visita)', 'retorno-acomodacao': 'Retorno (Acomodação)', 'retorno-material': 'Retorno (Material)', 'retorno-medicamento': 'Retorno (Medicamento)', sync: 'Sync do hospital', alta: 'Alta registrada', aviso: 'Aviso',
+  hospital: 'Hospital', 'chip-ok': 'Chip OK', 'chip-divergente': 'Chip divergente',
 };
 // Grupos e itens do painel (ids = fluxos do servidor)
 const GRUPOS = [
@@ -420,6 +423,9 @@ const GRUPOS = [
   ] },
   { cor: 'roxo', icone: 'ciclo', titulo: 'Ciclo Completo', desc: 'Realize todo o fluxo de ponta a ponta', itens: [
     { id: 'e2e', icone: 'check', motivoLivre: 'Cria, desospitaliza e finaliza numa execução só' },
+  ] },
+  { cor: 'rosa', icone: 'funil', titulo: 'Conferir Filter Chips', desc: 'Contagem dos chips da tela inicial da Auditoria', itens: [
+    { id: 'chips', icone: 'check', motivoLivre: 'Só leitura: não usa a internação em uso' },
   ] },
 ];
 const ETAPA_DESOSP = { enviada: 'enviada', atribuida: 'atribuída', aprovada: 'aprovada', confirmada: 'confirmada' };

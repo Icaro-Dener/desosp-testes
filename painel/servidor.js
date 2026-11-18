@@ -29,6 +29,7 @@ const FLUXOS = {
   hospitalista: { nome: 'Avaliação hospitalista', tipo: 'Questionário', projeto: 'fluxos', spec: 'tests/fluxos/04-hospitalista.spec.ts' },
   finalizar: { nome: 'Finalizar internação', tipo: 'Encerramento', projeto: 'fluxos', spec: 'tests/fluxos/99-finalizar-internacao.spec.ts' },
   e2e: { nome: 'Ciclo completo', tipo: 'Teste completo', projeto: 'e2e', spec: 'tests/desospitalizacao-e2e.spec.ts' },
+  chips: { nome: 'Conferir filter chips', tipo: 'Conferência', projeto: 'fluxos', spec: 'tests/fluxos/10-filter-chips.spec.ts' },
   setup: { nome: 'Renovar login', tipo: '', projeto: 'setup', spec: null },
 };
 
