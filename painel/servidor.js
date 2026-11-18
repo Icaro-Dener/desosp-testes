@@ -41,7 +41,7 @@ function internacaoAtual() {
 function bloqueio(id, i = internacaoAtual()) {
   const etapa = i?.desosp?.etapa;
   const nome = AMBIENTES[ambiente];
-  if (id !== 'setup' && !fs.existsSync(sessaoDe(ambiente))) return `Sem login salvo em ${nome}. Clique em "Renovar login" primeiro.`;
+  if (id !== 'setup' && !fs.existsSync(sessaoDe(ambiente))) return `Sem login salvo em ${nome}. Clique na engrenagem e em "Renovar login" primeiro.`;
   // a internação em uso é do ambiente em que foi criada (id na Auditoria, kanban do Transição)
   const dela = i ? (i.ambiente || 'hml') : null;
   if (dela && dela !== ambiente && id !== 'criar' && id !== 'e2e' && id !== 'setup')

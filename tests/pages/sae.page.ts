@@ -30,7 +30,7 @@ export class SaePage {
     if (new URL(this.page.url()).pathname.startsWith('/secure/')) return;
     // Sem janela (navegador oculto) não há onde logar: para logo, em vez de esperar 10 min
     if (process.env.PAINEL_OCULTO === '1')
-      throw new Error('Sessão do SAE expirada. Clique em "Renovar login" no painel e rode o fluxo de novo.');
+      throw new Error('Sessão do SAE expirada. Clique na engrenagem do painel e em "Renovar login" e rode o fluxo de novo.');
     console.log('\n>>> Sessão do SAE expirada: faça o login no SAE na janela do navegador (até 10 min).');
     await this.page.waitForURL((u) => u.pathname.startsWith('/secure/'), { timeout: 10 * 60_000 });
     await this.page.waitForLoadState('networkidle');
