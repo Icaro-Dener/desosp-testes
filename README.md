@@ -21,7 +21,7 @@ npx playwright install chromium
 npm run painel
 ```
 
-Abra http://localhost:4600 e siga o botão **Como usar**:
+Abra http://localhost:4600 e siga o botão de ajuda (**?**), ao lado da engrenagem:
 
 1. Logue na VPN da Unimed POA.
 2. Clique na engrenagem (Configurações) e em **Renovar login** e faça login no SAE (e no Microsoft) quando requisitado.

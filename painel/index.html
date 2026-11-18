@@ -245,7 +245,7 @@
     main { padding: 24px 16px 40px; }
     .grupos { grid-template-columns: 1fr; }
     .marca { gap: 14px; } .marca .pulso { width: 44px; }
-    .acoes { width: 100%; } .acoes > .btn { flex: 1; justify-content: center; padding: 11px 12px; }
+    .acoes { width: 100%; } .acoes > .btn:not(.icone-so) { flex: 1; justify-content: center; padding: 11px 12px; }
     .ind { flex-basis: 50%; padding: 8px 10px; gap: 10px; }
     .ind svg { width: 22px; height: 22px; }
     .ind .val { font-size: 15.5px; }
@@ -305,13 +305,13 @@
       </div>
     </div>
     <div class="acoes">
-      <button id="btnGuia" class="btn guia" title="Passo a passo para usar o painel"><svg><use href="#i-ajuda"/></svg>Como usar</button>
       <div class="ambiente" role="radiogroup" aria-label="Ambiente das aplicações" title="Ambiente da Auditoria Clínica e do Transição de Cuidado. O SAE é sempre o HML01.">
         <span class="rot-amb">Ambiente</span>
         <button role="radio" data-amb="hml" aria-checked="true">HML</button>
         <button role="radio" data-amb="dev" aria-checked="false">DEV</button>
       </div>
       <button id="btnParar" class="btn perigo" disabled><svg><use href="#i-sair"/></svg>Parar</button>
+      <button id="btnGuia" class="btn icone-so" title="Como usar: passo a passo do painel"><svg><use href="#i-ajuda"/></svg><span class="sr">Como usar</span></button>
       <div class="config">
         <button id="btnConfig" class="btn icone-so" aria-haspopup="true" aria-expanded="false" aria-controls="menuConfig" title="Configurações"><svg><use href="#i-engrenagem"/></svg><span class="sr">Configurações</span></button>
         <div id="menuConfig" class="menu-config" role="menu" hidden>
