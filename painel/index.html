@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fluxos Auditoria Clínica</title>
+<script>
+  // tema antes de desenhar (evita piscar): "cockpit" é o padrão; "escuro" é o visual anterior
+  try { document.documentElement.dataset.tema = localStorage.getItem('tema') === 'escuro' ? 'escuro' : 'cockpit'; }
+  catch { document.documentElement.dataset.tema = 'cockpit'; }
+</script>
 <style>
   :root {
     color-scheme: dark;
@@ -254,6 +259,160 @@
     .ind + .ind::before { display: none; }
     td:first-child { width: 45%; }
   }
+
+  /* ===================================================================
+     Tema "Cockpit" (padrão): visual da Cockpit de Auditoria Clínica.
+     Paleta e formas do design system da Unimed usado na Cockpit:
+     verde #00995d, barra menta #ccebdf, fundo #f3f6f8, cards brancos.
+     O tema "Escuro" é o estilo base acima (data-tema="escuro").
+     A fonte Unimed só aparece se estiver instalada; senão, Segoe UI.
+     =================================================================== */
+  html[data-tema="cockpit"] {
+    color-scheme: light;
+    --bg: #f3f6f8; --bg2: #f3f6f8;
+    --text: #272b30; --muted: #6a7178; --faint: #adb5bd;
+    --line: #e9ecef; --line-2: #dee2e6;
+    --ok: #00995d; --err: #c92a2a; --run: #d08700;
+    --prim: #00995d; --prim-hover: #197346; --prim-soft: rgba(0,153,93,.08);
+    --card-shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05);
+  }
+  html[data-tema="cockpit"] body {
+    background: var(--bg); color: var(--text);
+    font: 15px/1.5 "Unimed Sans2020", "Unimed Sans 2020", "Unimed Sans", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  }
+  html[data-tema="cockpit"] body::before, html[data-tema="cockpit"] body::after, html[data-tema="cockpit"] .arco { display: none; }
+  html[data-tema="cockpit"] h1, html[data-tema="cockpit"] .grupo h2, html[data-tema="cockpit"] .passo h3 {
+    font-family: "Unimed Slab2020", "Unimed Slab 2020", "Unimed Slab", "Segoe UI", system-ui, sans-serif;
+  }
+
+  /* barra do topo menta, de ponta a ponta, como na Cockpit */
+  html[data-tema="cockpit"] header {
+    background: #ccebdf; box-shadow: 0 1px 5px rgba(21,24,26,.1);
+    margin: -40px calc(50% - 50vw) 28px; padding: 16px calc(50vw - 50% + 28px);
+  }
+  html[data-tema="cockpit"] h1 { font-size: clamp(22px, 2.6vw, 28px); letter-spacing: 0; color: #1d2125; }
+  html[data-tema="cockpit"] .sub { color: #4f575e; font-size: 14px; }
+  html[data-tema="cockpit"] .marca .pulso path { stroke: var(--prim); }
+
+  /* botões: brancos com contorno verde, cantos de 4px */
+  html[data-tema="cockpit"] .btn {
+    color: var(--prim); background: #fff; border: 1px solid var(--prim); border-radius: 4px; padding: 10px 16px; font-size: 14px;
+  }
+  html[data-tema="cockpit"] .btn:hover:not(:disabled) { background: var(--prim-soft); border-color: var(--prim-hover); color: var(--prim-hover); }
+  html[data-tema="cockpit"] .btn:disabled { opacity: .5; }
+  html[data-tema="cockpit"] .btn.icone-so { padding: 10px 11px; }
+  html[data-tema="cockpit"] .btn.icone-so[aria-expanded="true"] { background: var(--prim-soft); border-color: var(--prim-hover); }
+  html[data-tema="cockpit"] .btn.perigo { color: var(--err); border-color: #e9aaaa; background: #fff; }
+  html[data-tema="cockpit"] .btn.perigo:hover:not(:disabled) { background: #faeaea; border-color: var(--err); color: var(--err); }
+  html[data-tema="cockpit"] .btn.guia { color: #fff; background: var(--prim); border-color: var(--prim); }
+  html[data-tema="cockpit"] .btn.guia:hover { color: #fff; background: var(--prim-hover); border-color: var(--prim-hover); }
+  html[data-tema="cockpit"] .btn.primario { color: #fff; background: var(--prim); border-color: var(--prim); }
+  html[data-tema="cockpit"] .btn.primario:hover { color: #fff; background: var(--prim-hover); }
+
+  /* seletor de ambiente: segmentado branco (DEV ciano, HML laranja, PRD azul) */
+  html[data-tema="cockpit"] .ambiente { background: #fff; border: 1px solid #ced4da; border-radius: 4px; padding: 3px; }
+  html[data-tema="cockpit"] .ambiente .rot-amb { color: var(--muted); }
+  html[data-tema="cockpit"] .ambiente button { border-radius: 3px; color: var(--muted); padding: 6px 12px; }
+  html[data-tema="cockpit"] .ambiente button:hover:not(:disabled) { background: #f1f3f5; color: var(--text); }
+  html[data-tema="cockpit"] .ambiente button[aria-checked="true"][data-amb="dev"] { color: #fff; background: #0d8091; }
+  html[data-tema="cockpit"] .ambiente button[aria-checked="true"][data-amb="hml"] { color: #fff; background: #f76707; }
+  html[data-tema="cockpit"] .ambiente button[aria-checked="true"][data-amb="prd"] { color: #fff; background: #1a79cb; }
+  html[data-tema="cockpit"] .ind .val.amb-dev { color: #0d8091; } html[data-tema="cockpit"] .ind .val.amb-hml { color: #f76707; } html[data-tema="cockpit"] .ind .val.amb-prd { color: #1a79cb; }
+
+  html[data-tema="cockpit"] .aviso { background: #fff6d8; border: 1px solid #fbd999; color: #8a6a00; border-radius: 4px; }
+
+  /* resumo: como os cards de contagem do topo da Cockpit */
+  html[data-tema="cockpit"] .indicadores { background: #fff; border: 0; border-radius: 8px; box-shadow: var(--card-shadow); backdrop-filter: none; padding: 14px 8px; }
+  html[data-tema="cockpit"] .ind + .ind::before { background: var(--line); }
+  html[data-tema="cockpit"] .ind .rot { color: var(--muted); font-size: 13px; }
+  html[data-tema="cockpit"] .ind .val { color: var(--text); }
+  html[data-tema="cockpit"] .ind .val.livre { color: var(--prim); }
+  html[data-tema="cockpit"] .c-yellow { color: #d08700; } html[data-tema="cockpit"] .c-blue { color: #1a79cb; }
+  html[data-tema="cockpit"] .c-teal { color: #00995d; } html[data-tema="cockpit"] .c-indigo { color: #4263eb; }
+  html[data-tema="cockpit"] .c-orange { color: #f76707; } html[data-tema="cockpit"] .c-cyan { color: #0d8091; }
+
+  /* grupos: cards brancos com faixa de cor no topo */
+  html[data-tema="cockpit"] .grupo { background: #fff; border: 0; border-top: 4px solid var(--acc); border-radius: 8px; box-shadow: var(--card-shadow); }
+  html[data-tema="cockpit"] .grupo::after { display: none; }
+  html[data-tema="cockpit"] .grupo.azul { --acc: #1a79cb; --soft: #e8f2fa; }
+  html[data-tema="cockpit"] .grupo.verde { --acc: #00995d; --soft: #e8f5e9; }
+  html[data-tema="cockpit"] .grupo.laranja { --acc: #f76707; --soft: #fef0e6; }
+  html[data-tema="cockpit"] .grupo.rosa { --acc: #d6336c; --soft: #fcebf1; }
+  html[data-tema="cockpit"] .grupo.roxo { --acc: #7048e8; --soft: #f1edfd; }
+  html[data-tema="cockpit"] .tile { background: var(--soft); color: var(--acc); border-radius: 8px; box-shadow: none; width: 48px; height: 48px; }
+  html[data-tema="cockpit"] .tile svg { width: 24px; height: 24px; }
+  html[data-tema="cockpit"] .grupo h2 { font-size: 19px; color: #1d2125; }
+  html[data-tema="cockpit"] .grupo .desc { color: var(--muted); }
+  html[data-tema="cockpit"] .item { background: #fff; border: 1px solid var(--line-2); border-radius: 6px; color: var(--text); padding: 14px; }
+  html[data-tema="cockpit"] .item:hover:not(:disabled) { background: var(--soft); border-color: var(--acc); transform: none; }
+  html[data-tema="cockpit"] .item:disabled { background: #f8f9fa; }
+  html[data-tema="cockpit"] .mini, html[data-tema="cockpit"] .grupo.verde .mini, html[data-tema="cockpit"] .grupo.laranja .mini { background: var(--soft); color: var(--acc); border-radius: 6px; }
+  html[data-tema="cockpit"] .item-motivo { color: var(--muted); }
+  html[data-tema="cockpit"] .conta { background: var(--acc); color: #fff; border-radius: 10px; }
+  html[data-tema="cockpit"] .seta { background: #f1f3f5; color: var(--muted); }
+  html[data-tema="cockpit"] .item:hover:not(:disabled) .seta { background: var(--acc); color: #fff; }
+  /* em execução: destaque amarelo, como o chip ativo da Cockpit */
+  html[data-tema="cockpit"] .item.atual { background: #fffaea; border-color: #cca035; box-shadow: 0 0 0 1px #cca035; }
+  html[data-tema="cockpit"] .item.atual .seta { background: #cca035; color: #fff; }
+
+  /* execução */
+  html[data-tema="cockpit"] .painel { background: #fff; border: 0; border-radius: 8px; box-shadow: var(--card-shadow); }
+  html[data-tema="cockpit"] .painel h3 { color: var(--muted); }
+  html[data-tema="cockpit"] .status { background: #f1f3f5; color: var(--muted); }
+  html[data-tema="cockpit"] .status.rodando { background: #fff6d8; color: #8a6a00; }
+  html[data-tema="cockpit"] .status.passou { background: #e8f5e9; color: #00995d; }
+  html[data-tema="cockpit"] .status.falhou, html[data-tema="cockpit"] .status.parado { background: #faeaea; color: #c92a2a; }
+  html[data-tema="cockpit"] .modo { background: #f1f3f5; color: var(--muted); }
+  html[data-tema="cockpit"] .ic { border-color: #ced4da; color: var(--muted); }
+  html[data-tema="cockpit"] li.ok .ic { color: #fff; }
+  html[data-tema="cockpit"] li.erro .ic { color: #fff; }
+  html[data-tema="cockpit"] .msg-erro { background: #faeaea; color: #8d1d1d; border-color: #e9aaaa; }
+  html[data-tema="cockpit"] pre.log { background: #f8f9fa; color: #343a40; border-color: var(--line-2); }
+  html[data-tema="cockpit"] .print img { border-color: var(--line-2); border-radius: 6px; }
+
+  /* toggle e menu de configurações */
+  html[data-tema="cockpit"] .toggle { background: #fff; border: 1px solid var(--line-2); border-radius: 4px; color: var(--text); }
+  html[data-tema="cockpit"] .toggle:hover { background: #f8f9fa; border-color: #ced4da; }
+  html[data-tema="cockpit"] .trilho { background: #ced4da; }
+  html[data-tema="cockpit"] .trilho::after { background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  html[data-tema="cockpit"] .toggle input:checked ~ .trilho { background: var(--prim); }
+  html[data-tema="cockpit"] .toggle input:checked ~ svg { color: var(--prim); }
+  html[data-tema="cockpit"] .menu-config { background: #fff; border: 1px solid var(--line-2); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); }
+  html[data-tema="cockpit"] .menu-config .btn { border-color: var(--line-2); color: var(--text); }
+  html[data-tema="cockpit"] .menu-config .btn svg { color: var(--prim); }
+  html[data-tema="cockpit"] .menu-config .btn:hover:not(:disabled) { border-color: var(--prim); background: var(--prim-soft); color: var(--text); }
+
+  /* guia "Como usar" */
+  html[data-tema="cockpit"] dialog.guia { background: #fff; border: 0; border-radius: 8px; box-shadow: 0 16px 48px rgba(0,0,0,.2); }
+  html[data-tema="cockpit"] dialog.guia::backdrop { background: rgba(16,18,19,.45); backdrop-filter: none; }
+  html[data-tema="cockpit"] .guia-topo h2 { color: var(--muted); }
+  html[data-tema="cockpit"] .fechar { background: #fff; border-color: var(--line-2); border-radius: 4px; }
+  html[data-tema="cockpit"] .fechar:hover { background: #f1f3f5; color: var(--text); }
+  html[data-tema="cockpit"] .trilha button { background: #e9ecef; }
+  html[data-tema="cockpit"] .trilha button.feito { background: #9cccbd; }
+  html[data-tema="cockpit"] .trilha button.atual { background: var(--prim); }
+  html[data-tema="cockpit"] .passo-num { color: var(--prim); }
+  html[data-tema="cockpit"] .passo p, html[data-tema="cockpit"] .passo li { color: #4f575e; }
+  html[data-tema="cockpit"] .passo li svg { color: var(--prim); }
+  html[data-tema="cockpit"] .dica { background: #fff6d8; border-color: #fbd999; color: #8a6a00; border-radius: 4px; }
+  html[data-tema="cockpit"] .guia-rodape { background: #f8f9fa; border-color: var(--line); }
+
+  /* seletor de tema no menu */
+  .tema-sel { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.04); }
+  .tema-sel .rot { font-weight: 600; font-size: 14px; flex: 1; display: flex; align-items: center; gap: 10px; }
+  .tema-sel .rot svg { width: 20px; height: 20px; color: var(--muted); }
+  .tema-sel .opcoes { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: rgba(255,255,255,.06); }
+  .tema-sel button { font: inherit; font-size: 12.5px; font-weight: 700; color: var(--muted); background: transparent; border: 0; border-radius: 7px; padding: 5px 10px; cursor: pointer; }
+  .tema-sel button[aria-checked="true"] { color: #fff; background: linear-gradient(135deg, #8b5cf6, #3b82f6); }
+  html[data-tema="cockpit"] .tema-sel { background: #fff; border-color: var(--line-2); border-radius: 4px; }
+  html[data-tema="cockpit"] .tema-sel .rot svg { color: var(--prim); }
+  html[data-tema="cockpit"] .tema-sel .opcoes { background: #f1f3f5; border-radius: 4px; }
+  html[data-tema="cockpit"] .tema-sel button { border-radius: 3px; }
+  html[data-tema="cockpit"] .tema-sel button[aria-checked="true"] { background: var(--prim); }
+
+  @media (max-width: 720px) {
+    html[data-tema="cockpit"] header { margin-top: -24px; padding: 14px calc(50vw - 50% + 16px); }
+  }
 </style>
 </head>
 <body>
@@ -295,6 +454,7 @@
   <symbol id="i-funil" viewBox="0 0 24 24"><path class="i" d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></symbol>
   <symbol id="i-engrenagem" viewBox="0 0 24 24"><circle class="i" cx="12" cy="12" r="3"/><path class="i" d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
   <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></symbol>
+  <symbol id="i-paleta" viewBox="0 0 24 24"><path class="i" d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10" cy="7.2" r="1.2" fill="currentColor"/><circle cx="14.5" cy="7.2" r="1.2" fill="currentColor"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><circle class="i" cx="12" cy="12" r="9"/><path class="i" d="m10 8.5 5.5 3.5-5.5 3.5z"/></symbol>
 </svg>
 
@@ -320,6 +480,13 @@
         <button id="btnConfig" class="btn icone-so" aria-haspopup="true" aria-expanded="false" aria-controls="menuConfig" title="Configurações"><svg><use href="#i-engrenagem"/></svg><span class="sr">Configurações</span></button>
         <div id="menuConfig" class="menu-config" role="menu" hidden>
           <div class="menu-titulo">Configurações</div>
+          <div class="tema-sel">
+            <span class="rot"><svg><use href="#i-paleta"/></svg>Tema</span>
+            <span class="opcoes" role="radiogroup" aria-label="Tema do painel">
+              <button role="radio" data-tema="cockpit" aria-checked="true">Cockpit</button>
+              <button role="radio" data-tema="escuro" aria-checked="false">Escuro</button>
+            </span>
+          </div>
           <label class="toggle" title="Ligado: os fluxos abrem uma janela do browser para você acompanhar. Desligado: rodam escondidos. Vale para a próxima execução; o login sempre abre a janela.">
             <input type="checkbox" id="chkMostrar" checked>
             <svg><use href="#i-olho"/></svg>Mostrar browser<span class="trilho"></span>
@@ -687,6 +854,17 @@ $('guia').onkeydown = (e) => {
 };
 $('btnGuia').onclick = () => { mostrarPasso(0); $('guia').showModal(); };
 
+// Tema do painel (preferência deste navegador): Cockpit (padrão) ou Escuro
+function marcarTema() {
+  const t = document.documentElement.dataset.tema;
+  document.querySelectorAll('.tema-sel button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.tema === t)));
+}
+document.querySelectorAll('.tema-sel button').forEach((b) => b.onclick = () => {
+  document.documentElement.dataset.tema = b.dataset.tema;
+  try { localStorage.setItem('tema', b.dataset.tema); } catch {}
+  marcarTema();
+});
+marcarTema();
 // Engrenagem: abre/fecha o menu; fecha com clique fora ou Esc
 const menuConfig = $('menuConfig'), btnConfig = $('btnConfig');
 const abrirConfig = (abrir) => { menuConfig.hidden = !abrir; btnConfig.setAttribute('aria-expanded', String(abrir)); };
