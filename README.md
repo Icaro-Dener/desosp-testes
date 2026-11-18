@@ -35,6 +35,8 @@ Abra http://localhost:4600 e siga o botão de ajuda (**?**), ao lado da engrenag
 
 Cada ambiente tem a sua sessão de login (`.auth/<ambiente>.json`). DEV e HML compartilham o login do SAE; PRD nunca.
 
+A internação em uso (a trava entre os fluxos) é uma por SAE: DEV e HML dividem a mesma (`.estado/internacao-atual.json`), porque usam o mesmo SAE e o passo 0 da criação finaliza as abertas da paciente de teste nele; PRD tem a sua (`.estado/internacao-prd.json`). Dá para ter uma internação em uso em PRD e outra em DEV/HML ao mesmo tempo.
+
 ### Produção (PRD)
 
 Em PRD os fluxos gravam **dados reais**: internação no SAE de produção, desosp e avaliações para as equipes reais do Transição de Cuidado, protocolo no CRM (Serviço Social). O painel mostra um aviso fixo enquanto PRD estiver selecionado. Proteções só de PRD:

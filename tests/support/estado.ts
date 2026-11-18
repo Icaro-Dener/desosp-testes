@@ -8,8 +8,15 @@ import { Ambiente, AMBIENTE_ATUAL, NOME_AMBIENTE } from './ambiente';
  * Funciona como trava: enquanto o arquivo existir, "Criar internação" não roda
  * de novo; só "Finalizar internação" apaga o arquivo.
  * Guarda só códigos/ids (nada de dado pessoal).
+ *
+ * Uma internação em uso por SAE: DEV e HML usam o mesmo SAE (HML01) e dividem
+ * a mesma (o passo 0 da criação finaliza as abertas da paciente de teste nesse SAE);
+ * PRD tem outro SAE e a sua própria, independente.
  */
-export const ARQUIVO_ESTADO = path.resolve(__dirname, '..', '..', '.estado', 'internacao-atual.json');
+export function arquivoEstado(a: Ambiente): string {
+  return path.resolve(__dirname, '..', '..', '.estado', a === 'prd' ? 'internacao-prd.json' : 'internacao-atual.json');
+}
+export const ARQUIVO_ESTADO = arquivoEstado(AMBIENTE_ATUAL);
 
 export interface InternacaoAtual {
   codigo: string;

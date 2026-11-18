@@ -49,7 +49,7 @@ export default defineConfig({
     },
     {
       // Fluxos separados (rodar um por vez, na ordem): 01 criar → 02 desosp → 03 finalizar.
-      // A internação em uso fica em .estado/internacao-atual.json (trava entre fluxos).
+      // A internação em uso fica em .estado/internacao-atual.json (DEV/HML) ou internacao-prd.json (PRD): trava entre fluxos.
       name: 'fluxos',
       testMatch: /fluxos[\\/].*\.spec\.ts/,
       use: {

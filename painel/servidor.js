@@ -13,7 +13,8 @@ const RAIZ = path.resolve(__dirname, '..');
 const PORTA = Number(process.env.PORTA) || 4600;
 const CLI = path.join(RAIZ, 'node_modules', '@playwright', 'test', 'cli.js');
 const ULTIMA = path.join(__dirname, 'ultima-execucao.json');
-const ESTADO = path.join(RAIZ, '.estado', 'internacao-atual.json');
+// Internação em uso: uma por SAE. DEV e HML dividem a mesma (mesmo SAE HML01); PRD tem a sua.
+const arquivoEstado = (a) => path.join(RAIZ, '.estado', a === 'prd' ? 'internacao-prd.json' : 'internacao-atual.json');
 // Ambiente das apps OutSystems (o SAE é sempre o HML01). Guardado para sobreviver a reinícios.
 const PREFS = path.join(RAIZ, '.estado', 'painel.json');
 const AMBIENTES = { dev: 'DEV', hml: 'HML', prd: 'PRD' };
@@ -34,8 +35,8 @@ const FLUXOS = {
   setup: { nome: 'Renovar login', tipo: '', projeto: 'setup', spec: null },
 };
 
-function internacaoAtual() {
-  try { return JSON.parse(fs.readFileSync(ESTADO, 'utf8')); } catch { return null; }
+function internacaoAtual(a = ambiente) {
+  try { return JSON.parse(fs.readFileSync(arquivoEstado(a), 'utf8')); } catch { return null; }
 }
 
 /** Trava entre fluxos: devolve o motivo de bloqueio ou null (os specs conferem de novo). */
@@ -120,7 +121,7 @@ function rodar(fluxo, mostrar) {
     if (resto.trim()) emitir({ tipo: 'log', texto: resto });
     execucao.fim = Date.now();
     if (execucao.status === 'rodando') execucao.status = code === 0 ? 'passou' : execucao.status === 'parado' ? 'parado' : 'falhou';
-    emitir({ tipo: 'execucao', projeto: fluxo, status: execucao.status, codigo: code, internacao: internacaoAtual() });
+    emitir({ tipo: 'execucao', projeto: fluxo, status: execucao.status, codigo: code, internacao: internacaoAtual(amb) });
     filho = null;
     try { fs.writeFileSync(ULTIMA, JSON.stringify(execucao)); } catch {}
   });
