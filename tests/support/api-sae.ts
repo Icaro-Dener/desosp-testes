@@ -25,12 +25,15 @@ export class SaeApi {
 
   /** Devolve null quando não há credenciais (a validação por API é pulada). */
   static async criar(): Promise<SaeApi | null> {
+    // PRD: sem gateway configurado (desligado de propósito); confere pelas telas do SAE
+    const gw = AMBIENTE.apiGateway;
+    if (!gw) return null;
     const env = lerEnv();
     const id = env.SAE_API_CLIENT_ID, segredo = env.SAE_API_CLIENT_SECRET;
     if (!id || !segredo) return null;
     const basic = Buffer.from(`${id}:${segredo}`).toString('base64');
     const tokenCtx = await request.newContext();
-    const r = await tokenCtx.post(`${AMBIENTE.apiGateway}/oauth2/v1/access-token`, {
+    const r = await tokenCtx.post(`${gw}/oauth2/v1/access-token`, {
       headers: { Authorization: `Basic ${basic}`, 'Content-Type': 'application/x-www-form-urlencoded' },
       data: 'grant_type=client_credentials',
     });
@@ -38,7 +41,7 @@ export class SaeApi {
     const { access_token } = await r.json();
     await tokenCtx.dispose();
     const ctx = await request.newContext({
-      baseURL: AMBIENTE.apiGateway,
+      baseURL: gw,
       extraHTTPHeaders: { Authorization: `Bearer ${access_token}`, client_id: id },
     });
     return new SaeApi(ctx);

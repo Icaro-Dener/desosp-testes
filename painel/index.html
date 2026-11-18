@@ -73,6 +73,15 @@
 
   .aviso { display: none; border-radius: 14px; padding: 12px 16px; margin-bottom: 18px; background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.3); color: var(--run); font-weight: 600; }
   .aviso.on { display: block; }
+  /* aviso de produção (fixo enquanto PRD estiver selecionado) */
+  .aviso-prd { display: flex; gap: 14px; align-items: flex-start; border-radius: 14px; padding: 14px 18px; margin-bottom: 18px; font-size: 14px; line-height: 1.5;
+    background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.45); color: #fecaca; }
+  .aviso-prd[hidden] { display: none; }
+  .aviso-prd > svg, .aviso-prd > .ico-fa { width: 22px; height: 22px; font-size: 20px; line-height: 22px; flex-shrink: 0; margin-top: 1px; color: #f87171; }
+  .aviso-prd b { color: #fff; }
+  html[data-tema="cockpit"] .aviso-prd { background: #faeaea; border-color: #e9aaaa; color: #6f1717; border-radius: 4px; }
+  html[data-tema="cockpit"] .aviso-prd > svg, html[data-tema="cockpit"] .aviso-prd > .ico-fa { color: #c92a2a; }
+  html[data-tema="cockpit"] .aviso-prd b { color: #8d1d1d; }
 
   /* barra de indicadores */
   .indicadores {
@@ -532,6 +541,10 @@
     </div>
   </header>
 
+  <div id="avisoPrd" class="aviso-prd" role="alert" hidden>
+    <svg><use href="#i-alerta"/></svg>
+    <div><b>Você está em PRODUÇÃO.</b> Os fluxos gravam dados reais: criam internação no SAE de produção, enviam a desosp e as avaliações para as equipes reais do Transição de Cuidado e o Serviço Social gera protocolo no CRM. Use só a paciente de teste (Mulher Teste), confira o resultado de cada fluxo e finalize a internação ao terminar. Em PRD a limpeza automática (passo 0) fica desligada e a validação por API não é usada.</div>
+  </div>
   <div id="aviso" class="aviso"></div>
 
   <section class="indicadores" id="indicadores" aria-label="Resumo"></section>
@@ -602,7 +615,7 @@
         <div><div class="passo-num">Passo 3 de 3</div><h3>Realize os fluxos pelos botões indicados e confira os resultados!</h3></div>
       </div>
       <ul>
-        <li><svg><use href="#i-check"/></svg><span>Escolha o <b>Ambiente</b> no topo: DEV ou HML (vale para a Auditoria e o Transição; o SAE é sempre o HML01). PRD ainda não tem automações.</span></li>
+        <li><svg><use href="#i-check"/></svg><span>Escolha o <b>Ambiente</b> no topo: DEV ou HML (Auditoria e Transição de cada um, com o SAE HML01) ou PRD (tudo de produção, inclusive o SAE). <b>Em PRD os dados são reais</b>: use só a paciente de teste e finalize a internação ao terminar.</span></li>
         <li><svg><use href="#i-check"/></svg><span>Comece por <b>Criar internação</b>. Os questionários e a desosp usam essa internação.</span></li>
         <li><svg><use href="#i-check"/></svg><span>Roda um fluxo por vez. As etapas, o resultado e o print aparecem em <b>Execução</b>; <b>Abrir relatório</b> (na engrenagem) traz vídeo e trace.</span></li>
         <li><svg><use href="#i-check"/></svg><span><b>Mostrar browser</b> (na engrenagem) ligado abre a janela para você acompanhar; desligado, o fluxo roda escondido. O login sempre aparece.</span></li>
@@ -848,6 +861,7 @@ async function iniciar(fluxo) {
 
 // seletor de ambiente: guardado no servidor (vale para todos os fluxos)
 function desenharAmbiente() {
+  $('avisoPrd').hidden = ambiente !== 'prd';
   document.querySelectorAll('.ambiente button').forEach((b) => {
     b.setAttribute('aria-checked', String(b.dataset.amb === ambiente));
     b.disabled = rodandoAgora;

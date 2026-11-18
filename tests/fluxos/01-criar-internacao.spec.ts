@@ -34,7 +34,8 @@ test('criar internação: SAE → sync → detalhes na Auditoria', async ({ page
 
   await test.step('0. SAE: finalizar internações de teste que ficaram abertas', async () => {
     const finalizadas = await sae.finalizarAbertasDoPacienteDeTeste();
-    anotar('limpeza', finalizadas.length ? `finalizadas: ${finalizadas.join(', ')}` : 'nenhuma internação aberta');
+    if (finalizadas === null) anotar('limpeza', 'PRD: limpeza automática desligada (não finaliza internações de outras execuções)');
+    else anotar('limpeza', finalizadas.length ? `finalizadas: ${finalizadas.join(', ')}` : 'nenhuma internação aberta');
   });
 
   await test.step('1. SAE: criar a internação', async () => {

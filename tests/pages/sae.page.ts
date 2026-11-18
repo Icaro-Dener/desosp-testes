@@ -1,10 +1,17 @@
 import { Page, Locator, expect } from '@playwright/test';
-import { AMBIENTE, salvarSessao } from '../support/ambiente';
+import { AMBIENTE, salvarSessao, EM_PRODUCAO } from '../support/ambiente';
 import { escolherHojeRichCalendar, escolherDiaRichCalendar } from '../support/calendarios';
 import { MASSA, p2, hojeBR, dataExtenso, dadosServicoSocial, dadosHospitalista, dadosVisita, Inconformidade, resumoInconformidadeSae } from '../support/dados';
 
 // SAE (JSF/RichFaces). Ids com ":" precisam de [id="..."].
 const $ = (id: string) => `[id="${id}"]`;
+
+/**
+ * Sugestão que é exatamente a paciente de teste: o nome no começo (antes só
+ * códigos/símbolos) e inteiro. Não pega "Mulher Testes" nem "Joana Mulher Teste".
+ */
+const escapar = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const PACIENTE_EXATA = new RegExp(`^[^\\p{L}]*${escapar(MASSA.pacienteBusca)}([^\\p{L}]|$)`, 'iu');
 
 export class SaePage {
   constructor(private readonly page: Page) {}
@@ -39,11 +46,18 @@ export class SaePage {
   }
 
   /** Autocomplete RichFaces: digita como usuário e clica na sugestão. */
-  private async autocomplete(campo: Locator, termo: string, sugestao: string | RegExp) {
+  private async autocomplete(campo: Locator, termo: string, sugestao: string | RegExp, unica = false) {
     await campo.click();
     await campo.fill('');
     await campo.pressSequentially(termo, { delay: 80 });
-    const item = this.page.locator('.richfaces_suggestionEntry').filter({ visible: true }).filter({ hasText: sugestao }).first();
+    const itens = this.page.locator('.richfaces_suggestionEntry').filter({ visible: true }).filter({ hasText: sugestao });
+    const item = itens.first();
+    await item.waitFor({ timeout: 30_000 });
+    if (unica) {
+      await this.page.waitForTimeout(800); // a lista de sugestões termina de chegar
+      const n = await itens.count();
+      if (n !== 1) throw new Error(`PRD: o autocomplete trouxe ${n} sugestões para "${termo}". Por segurança, o fluxo só segue com exatamente uma (a paciente de teste).`);
+    }
     await item.click({ timeout: 30_000 });
     await this.page.waitForLoadState('networkidle');
   }
@@ -72,7 +86,8 @@ export class SaePage {
 
     await this.autocomplete(page.locator($('formAddUpdate:prestador')), MASSA.prestadorBusca, MASSA.prestadorCodigo);
     await this.autocomplete(page.locator($('formAddUpdate:profissional')), MASSA.medicoBusca, /CRM/);
-    await this.autocomplete(page.locator($('formAddUpdate:paciente')), MASSA.pacienteBusca, MASSA.pacienteBusca);
+    // PRD: só a paciente de teste exata e única (HML/DEV seguem como sempre)
+    await this.autocomplete(page.locator($('formAddUpdate:paciente')), MASSA.pacienteBusca, EM_PRODUCAO ? PACIENTE_EXATA : MASSA.pacienteBusca, EM_PRODUCAO);
 
     await expect(page.locator($('formAddUpdate:pacienteInternadoDataPopupButton'))).toBeVisible();
     const atendimento = (await page.locator('body').innerText()).match(/N[º°] Atendimento\s+(\d+)/)?.[1];
@@ -381,7 +396,10 @@ export class SaePage {
    * ficaram em "Andamento" (execuções anteriores), para não lotar a fila.
    * Só atua no paciente de teste selecionado pelo autocomplete.
    */
-  async finalizarAbertasDoPacienteDeTeste(): Promise<string[]> {
+  async finalizarAbertasDoPacienteDeTeste(): Promise<string[] | null> {
+    // PRD: não dá alta em nada automaticamente (só a internação criada pela automação
+    // é finalizada, no fluxo Finalizar). Devolve null = limpeza pulada.
+    if (EM_PRODUCAO) return null;
     const page = this.page;
     const finalizadas: string[] = [];
     for (let i = 0; i < 20; i++) {

@@ -1,9 +1,9 @@
 import { test as setup, expect, Page } from '@playwright/test';
 import fs from 'fs';
-import { URLS, AMBIENTE, STORAGE_STATE, SAE_SESSION_STORAGE, compartilharSessaoSae } from './support/ambiente';
+import { URLS, AMBIENTE, STORAGE_STATE, SAE_SESSION_STORAGE, compartilharSessaoSae, EM_PRODUCAO } from './support/ambiente';
 
 // Login MANUAL: o navegador abre e você entra com o seu usuário em cada aplicação.
-// Nenhuma senha passa pelo código. Ao final a sessão fica em .auth/hml.json.
+// Nenhuma senha passa pelo código. Ao final a sessão fica em .auth/<ambiente>.json.
 //
 //   npx playwright test --project=setup
 
@@ -12,8 +12,9 @@ const DEZ_MINUTOS = 10 * 60_000;
 setup.setTimeout(3 * DEZ_MINUTOS);
 // Reaproveita a sessão anterior (se houver): só pede login onde ela expirou.
 // Primeira vez em DEV: parte da sessão de HML (o SAE é o mesmo, evita logar de novo nele).
+// PRD é outro SAE e outro OutSystems: nunca parte da sessão de HML.
 const SESSAO_HML = '.auth/hml.json';
-const sessaoInicial = [STORAGE_STATE, SESSAO_HML].find((f) => fs.existsSync(f));
+const sessaoInicial = (EM_PRODUCAO ? [STORAGE_STATE] : [STORAGE_STATE, SESSAO_HML]).find((f) => fs.existsSync(f));
 setup.use({
   headless: false,
   storageState: sessaoInicial ?? { cookies: [], origins: [] },
