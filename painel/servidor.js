@@ -7,6 +7,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { spawn, execFile } = require('child_process');
+const { prepararFontes, servirFontes } = require('./fontes');
 
 const RAIZ = path.resolve(__dirname, '..');
 const PORTA = Number(process.env.PORTA) || 4600;
@@ -203,6 +204,8 @@ const servidor = http.createServer((req, res) => {
     return fs.createReadStream(alvo).pipe(res);
   }
 
+  if (req.method === 'GET' && url.pathname.startsWith('/fontes/')) return servirFontes(req, res, url.pathname);
+
   if (req.method === 'GET' && url.pathname.startsWith('/relatorio/')) {
     // relatório HTML do Playwright (estático), só de dentro de playwright-report/
     const base = path.join(RAIZ, 'playwright-report');
@@ -224,6 +227,7 @@ const TIPOS = {
   '.webm': 'video/webm', '.zip': 'application/zip', '.md': 'text/markdown; charset=utf-8', '.txt': 'text/plain; charset=utf-8',
 };
 
+prepararFontes(); // fontes Unimed do tema Cockpit (em segundo plano)
 servidor.listen(PORTA, '127.0.0.1', () => {
   console.log(`Painel do E2E em http://localhost:${PORTA}`);
 });

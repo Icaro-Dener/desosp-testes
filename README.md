@@ -29,6 +29,13 @@ Abra http://localhost:4600 e siga o botão de ajuda (**?**), ao lado da engrenag
 
 O SAE é sempre o HML01; o seletor de ambiente troca só a Auditoria Clínica e o Transição de Cuidado (`unimedpoa-test` ↔ `unimedpoa-dev`).
 
+## Temas
+
+Na engrenagem (Configurações) → **Tema**: **Cockpit** (padrão, visual da Cockpit de Auditoria Clínica), **OutSystems** ou **Escuro**. A escolha fica salva no navegador.
+
+- As fontes Unimed do tema Cockpit não ficam no repositório: ao iniciar, o painel baixa da própria Cockpit (arquivos públicos) para `.estado/fontes/`. Sem acesso, usa a fonte do sistema.
+- Os ícones dos temas Cockpit e OutSystems são do Font Awesome 7 Free (CDN); sem internet, o painel volta para os ícones próprios.
+
 ## Segurança
 
 - Nenhuma senha passa pelo código: o login é sempre manual.
