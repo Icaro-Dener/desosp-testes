@@ -31,6 +31,8 @@ export const URLS = {
 // O nome do HML continua hml.json (sessões já salvas seguem valendo).
 export const STORAGE_STATE = `.auth/${AMBIENTE_ATUAL}.json`;
 export const SAE_SESSION_STORAGE = '.auth/sae-session.json';
+// .auth/ fica fora do git: num clone novo a pasta não existe.
+(require('fs') as typeof import('fs')).mkdirSync('.auth', { recursive: true });
 
 /** Regrava a sessão (cookies renovados) para a próxima execução não pedir login. */
 export async function salvarSessao(page: Page) {
