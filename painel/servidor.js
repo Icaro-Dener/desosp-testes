@@ -15,7 +15,9 @@ const ULTIMA = path.join(__dirname, 'ultima-execucao.json');
 const ESTADO = path.join(RAIZ, '.estado', 'internacao-atual.json');
 // Ambiente das apps OutSystems (o SAE é sempre o HML01). Guardado para sobreviver a reinícios.
 const PREFS = path.join(RAIZ, '.estado', 'painel.json');
-const AMBIENTES = { hml: 'HML', dev: 'DEV' };
+const AMBIENTES = { dev: 'DEV', hml: 'HML', prd: 'PRD' };
+// Ambientes que já aparecem no seletor, mas ainda sem automações (PRD: só leitura, nada roda)
+const SEM_AUTOMACAO = new Set(['prd']);
 let ambiente = (() => { try { const a = JSON.parse(fs.readFileSync(PREFS, 'utf8')).ambiente; return AMBIENTES[a] ? a : 'hml'; } catch { return 'hml'; } })();
 const sessaoDe = (a) => path.join(RAIZ, '.auth', `${a}.json`);
 
@@ -41,6 +43,7 @@ function internacaoAtual() {
 function bloqueio(id, i = internacaoAtual()) {
   const etapa = i?.desosp?.etapa;
   const nome = AMBIENTES[ambiente];
+  if (SEM_AUTOMACAO.has(ambiente)) return `As automações ainda não estão disponíveis em ${nome}. Troque o ambiente para DEV ou HML.`;
   if (id !== 'setup' && !fs.existsSync(sessaoDe(ambiente))) return `Sem login salvo em ${nome}. Clique na engrenagem e em "Renovar login" primeiro.`;
   // a internação em uso é do ambiente em que foi criada (id na Auditoria, kanban do Transição)
   const dela = i ? (i.ambiente || 'hml') : null;
@@ -91,6 +94,7 @@ function rodar(fluxo, mostrar) {
   // o login precisa da janela: sempre visível
   const oculto = projeto !== 'setup' && !mostrar;
   const amb = ambiente;
+  if (SEM_AUTOMACAO.has(amb)) throw new Error(`sem automações em ${amb}`); // a rota já bloqueia; reforço
   // "projeto" no evento = id do fluxo (a página usa para escolher a lista de etapas)
   execucao = { id: Date.now(), projeto: fluxo, inicio: Date.now(), fim: null, status: 'rodando', oculto, ambiente: amb, eventos: [] };
   emitir({ tipo: 'execucao', projeto: fluxo, status: 'rodando', oculto, ambiente: amb });

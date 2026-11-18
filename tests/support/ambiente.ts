@@ -6,6 +6,8 @@ import type { Page } from '@playwright/test';
 // com os dois ambientes. Pode sobrescrever as URLs por variável de ambiente.
 
 export type Ambiente = 'hml' | 'dev';
+// PRD aparece no painel, mas ainda não tem automações: nunca cair no HML por engano.
+if (process.env.PAINEL_AMBIENTE === 'prd') throw new Error('As automações ainda não estão disponíveis em PRD.');
 export const AMBIENTE_ATUAL: Ambiente = process.env.PAINEL_AMBIENTE === 'dev' ? 'dev' : 'hml';
 export const NOME_AMBIENTE: Record<Ambiente, string> = { hml: 'HML', dev: 'DEV' };
 const ODC: Record<Ambiente, string> = {

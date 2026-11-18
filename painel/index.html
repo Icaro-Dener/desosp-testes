@@ -74,7 +74,7 @@
   .ind .rot { color: var(--muted); font-size: 13.5px; }
   .ind .val { font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .ind .val.livre { color: var(--ok); font-size: 15px; }
-  .c-yellow { color: #facc15; } .c-blue { color: #60a5fa; } .c-teal { color: #34d399; } .c-indigo { color: #818cf8; } .c-orange { color: #fb923c; }
+  .c-yellow { color: #facc15; } .c-blue { color: #60a5fa; } .c-teal { color: #34d399; } .c-indigo { color: #818cf8; } .c-orange { color: #fb923c; } .c-cyan { color: #22d3ee; }
 
   /* grupos */
   .grupos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-bottom: 26px; }
@@ -155,16 +155,17 @@
   details summary { cursor: pointer; font-weight: 600; color: var(--muted); }
   pre.log { background: rgba(0,0,0,.35); color: #c7d2fe; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; height: 320px; overflow: auto; font: 12px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; margin: 12px 0 0; }
 
-  /* seletor de ambiente (HML / DEV) */
+  /* seletor de ambiente (DEV / HML / PRD): DEV ciano, HML laranja, PRD azul */
   .ambiente { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.04); }
   .ambiente .rot-amb { color: var(--muted); font-size: 13px; font-weight: 600; padding: 0 8px 0 10px; }
   .ambiente button { font: inherit; font-weight: 700; font-size: 13.5px; letter-spacing: .04em; color: var(--muted); background: transparent; border: 0; border-radius: 9px; padding: 7px 14px; cursor: pointer; }
   .ambiente button:hover:not(:disabled) { color: var(--text); background: rgba(255,255,255,.06); }
-  .ambiente button[aria-checked="true"][data-amb="hml"] { color: #052e1f; background: linear-gradient(135deg, #34d399, #14b8a6); }
-  .ambiente button[aria-checked="true"][data-amb="dev"] { color: #3a1d05; background: linear-gradient(135deg, #fdba74, #f97316); }
+  .ambiente button[aria-checked="true"][data-amb="dev"] { color: #042f36; background: linear-gradient(135deg, #67e8f9, #06b6d4); }
+  .ambiente button[aria-checked="true"][data-amb="hml"] { color: #3a1d05; background: linear-gradient(135deg, #fdba74, #f97316); }
+  .ambiente button[aria-checked="true"][data-amb="prd"] { color: #0b1f4d; background: linear-gradient(135deg, #93c5fd, #3b82f6); }
   .ambiente button:disabled { cursor: not-allowed; }
   .ambiente button:disabled:not([aria-checked="true"]) { opacity: .45; }
-  .val.amb-hml { color: #34d399; } .val.amb-dev { color: #fb923c; }
+  .val.amb-dev { color: #22d3ee; } .val.amb-hml { color: #fb923c; } .val.amb-prd { color: #60a5fa; }
 
   /* toggle "Mostrar browser" */
   .toggle {
@@ -247,6 +248,7 @@
     .marca { gap: 14px; } .marca .pulso { width: 44px; }
     .acoes { width: 100%; } .acoes > .btn:not(.icone-so) { flex: 1; justify-content: center; padding: 11px 12px; }
     .ind { flex-basis: 50%; padding: 8px 10px; gap: 10px; }
+    .ind.ind-amb { flex-basis: 100%; }
     .ind svg { width: 22px; height: 22px; }
     .ind .val { font-size: 15.5px; }
     .ind + .ind::before { display: none; }
@@ -308,8 +310,9 @@
     <div class="acoes">
       <div class="ambiente" role="radiogroup" aria-label="Ambiente das aplicações" title="Ambiente da Auditoria Clínica e do Transição de Cuidado. O SAE é sempre o HML01.">
         <span class="rot-amb">Ambiente</span>
-        <button role="radio" data-amb="hml" aria-checked="true">HML</button>
         <button role="radio" data-amb="dev" aria-checked="false">DEV</button>
+        <button role="radio" data-amb="hml" aria-checked="true">HML</button>
+        <button role="radio" data-amb="prd" aria-checked="false" title="Produção: ainda sem automações">PRD</button>
       </div>
       <button id="btnParar" class="btn perigo icone-so" disabled title="Parar a execução"><svg><use href="#i-stop"/></svg><span class="sr">Parar</span></button>
       <button id="btnGuia" class="btn guia icone-so" title="Como usar: passo a passo do painel"><svg><use href="#i-ajuda"/></svg><span class="sr">Como usar</span></button>
@@ -398,7 +401,7 @@
         <div><div class="passo-num">Passo 3 de 3</div><h3>Realize os fluxos pelos botões indicados e confira os resultados!</h3></div>
       </div>
       <ul>
-        <li><svg><use href="#i-check"/></svg><span>Escolha o <b>Ambiente</b> no topo: HML ou DEV (vale para a Auditoria e o Transição; o SAE é sempre o HML01).</span></li>
+        <li><svg><use href="#i-check"/></svg><span>Escolha o <b>Ambiente</b> no topo: DEV ou HML (vale para a Auditoria e o Transição; o SAE é sempre o HML01). PRD ainda não tem automações.</span></li>
         <li><svg><use href="#i-check"/></svg><span>Comece por <b>Criar internação</b>. Os questionários e a desosp usam essa internação.</span></li>
         <li><svg><use href="#i-check"/></svg><span>Roda um fluxo por vez. As etapas, o resultado e o print aparecem em <b>Execução</b>; <b>Abrir relatório</b> (na engrenagem) traz vídeo e trace.</span></li>
         <li><svg><use href="#i-check"/></svg><span><b>Mostrar browser</b> (na engrenagem) ligado abre a janela para você acompanhar; desligado, o fluxo roda escondido. O login sempre aparece.</span></li>
@@ -453,7 +456,9 @@ const GRUPOS = [
   ] },
 ];
 const ETAPA_DESOSP = { enviada: 'enviada', atribuida: 'atribuída', aprovada: 'aprovada', confirmada: 'confirmada' };
-let ambiente = 'hml', ambientes = { hml: 'HML', dev: 'DEV' }, fluxos = {}, internacao = null, estado = {}, inicio = null, fim = null, relogio = null, projetoAtual = 'criar', temRelatorio = false, rodandoAgora = false;
+const AMB_COMPLETO = { dev: 'DESENVOLVIMENTO', hml: 'HOMOLOGAÇÃO', prd: 'PRODUÇÃO' };
+const AMB_COR = { dev: 'c-cyan', hml: 'c-orange', prd: 'c-blue' };
+let ambiente = 'hml', ambientes = { dev: 'DEV', hml: 'HML', prd: 'PRD' }, fluxos = {}, internacao = null, estado = {}, inicio = null, fim = null, relogio = null, projetoAtual = 'criar', temRelatorio = false, rodandoAgora = false;
 
 const fmt = (ms) => { const s = Math.round(ms / 1000); return s < 60 ? `${s}s` : `${Math.floor(s / 60)}min ${String(s % 60).padStart(2, '0')}s`; };
 const icone = (nome) => `<svg><use href="#i-${nome}"/></svg>`;
@@ -476,7 +481,8 @@ function desenharIndicadores() {
     box.appendChild(d);
   };
   const total = Object.keys(fluxos).filter((k) => k !== 'setup').length;
-  ind('servidor', ambiente === 'dev' ? 'c-orange' : 'c-teal', 'Ambiente', ambientes[ambiente] || ambiente, 'amb-' + ambiente);
+  ind('servidor', AMB_COR[ambiente] || 'c-teal', 'Ambiente', AMB_COMPLETO[ambiente] || ambientes[ambiente] || ambiente, 'amb-' + ambiente);
+  box.lastElementChild.classList.add('ind-amb'); // nome completo: no celular ocupa a linha toda
   ind('zap', 'c-yellow', 'Fluxos ativos', String(total));
   ind('relogio', 'c-blue', 'Última execução', quandoCurto(inicio));
   if (!i) { ind('camadas', 'c-teal', 'Internação', 'Nenhuma em uso', 'livre'); return; }
