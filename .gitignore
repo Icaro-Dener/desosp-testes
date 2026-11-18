@@ -1,0 +1,11 @@
+node_modules/
+.auth/
+auth.json
+test-results/
+playwright-report/
+painel/ultima-execucao.json
+.estado/
+blob-report/
+*.zip
+.env
+.env.*

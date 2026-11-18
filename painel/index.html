@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluxos Auditoria Clínica</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0a0f1f; --bg2: #0d1430;
+    --text: #eef1fb; --muted: #9aa3bf; --faint: #6b7493;
+    --glass: rgba(255,255,255,.035); --glass-2: rgba(255,255,255,.06); --line: rgba(255,255,255,.09);
+    --ok: #34d399; --err: #f87171; --run: #fbbf24;
+    --blue: #3b82f6; --teal: #14b8a6; --orange: #f59e42; --purple: #8b5cf6;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; color: var(--text); background: var(--bg);
+    font: 15px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    position: relative; overflow-x: hidden;
+  }
+  /* brilhos e arcos decorativos do fundo */
+  body::before, body::after { content: ""; position: fixed; pointer-events: none; z-index: 0; border-radius: 50%; }
+  body::before {
+    width: 900px; height: 900px; right: -380px; bottom: -520px;
+    background: radial-gradient(circle at 40% 30%, rgba(139,92,246,.35), rgba(59,130,246,.18) 35%, transparent 65%);
+    filter: blur(10px);
+  }
+  body::after {
+    width: 1100px; height: 1100px; left: 35%; top: -820px;
+    border: 1px solid rgba(99,102,241,.22); box-shadow: 0 0 60px rgba(99,102,241,.08) inset;
+  }
+  .arco { position: fixed; z-index: 0; pointer-events: none; border-radius: 50%; border: 1px solid rgba(139,92,246,.18); }
+  .arco.a1 { width: 760px; height: 760px; right: -300px; bottom: -420px; }
+  .arco.a2 { width: 520px; height: 520px; right: -160px; bottom: -300px; border-color: rgba(59,130,246,.16); }
+
+  main { position: relative; z-index: 1; max-width: 1320px; margin: 0 auto; padding: 40px 28px 56px; }
+  svg { width: 1em; height: 1em; flex-shrink: 0; }
+  .i { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* cabeçalho */
+  header { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .marca { display: flex; align-items: center; gap: 22px; min-width: 0; }
+  .marca .pulso { width: 64px; height: 44px; }
+  h1 { font-size: clamp(24px, 3vw, 34px); margin: 0; letter-spacing: -.02em; font-weight: 700; }
+  .sub { color: var(--muted); font-size: 15px; margin-top: 4px; }
+  .acoes { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; font: inherit; font-weight: 600; font-size: 14.5px;
+    color: var(--text); background: rgba(255,255,255,.04); border: 1px solid var(--line);
+    padding: 12px 18px; border-radius: 12px; cursor: pointer; transition: background .15s, border-color .15s;
+  }
+  .btn svg { width: 20px; height: 20px; }
+  .btn:hover:not(:disabled) { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
+  .btn.perigo { color: #fb7185; border-color: rgba(251,113,133,.3); background: rgba(251,113,133,.06); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .aviso { display: none; border-radius: 14px; padding: 12px 16px; margin-bottom: 18px; background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.3); color: var(--run); font-weight: 600; }
+  .aviso.on { display: block; }
+
+  /* barra de indicadores */
+  .indicadores {
+    display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 26px;
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+    border: 1px solid var(--line); border-radius: 22px; padding: 16px 8px; backdrop-filter: blur(6px);
+  }
+  .ind { flex: 1 1 150px; display: flex; align-items: center; gap: 14px; padding: 4px 20px; min-width: 0; position: relative; }
+  .ind > div { min-width: 0; }
+  .ind .rot { white-space: nowrap; }
+  .ind + .ind::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 1px; background: var(--line); }
+  .ind svg { width: 28px; height: 28px; }
+  .ind .rot { color: var(--muted); font-size: 13.5px; }
+  .ind .val { font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ind .val.livre { color: var(--ok); font-size: 15px; }
+  .c-yellow { color: #facc15; } .c-blue { color: #60a5fa; } .c-teal { color: #34d399; } .c-indigo { color: #818cf8; } .c-orange { color: #fb923c; }
+
+  /* grupos */
+  .grupos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-bottom: 26px; }
+  .grupo {
+    position: relative; overflow: hidden; border-radius: 22px; padding: 22px; border: 1px solid var(--line);
+    background: linear-gradient(160deg, var(--g1), var(--g2) 60%);
+  }
+  .grupo::after { /* onda no canto superior direito */
+    content: ""; position: absolute; right: -60px; top: -90px; width: 260px; height: 180px; border-radius: 50%;
+    background: radial-gradient(closest-side, var(--glow), transparent); opacity: .9; pointer-events: none;
+  }
+  .grupo.azul { --g1: rgba(37,99,235,.38); --g2: rgba(23,37,84,.55); --glow: rgba(96,165,250,.45); --tile: linear-gradient(135deg,#60a5fa,#3b82f6); --acc: #93c5fd; border-color: rgba(96,165,250,.35); }
+  .grupo.verde { --g1: rgba(13,148,136,.36); --g2: rgba(10,47,52,.6); --glow: rgba(45,212,191,.4); --tile: linear-gradient(135deg,#34d399,#14b8a6); --acc: #5eead4; border-color: rgba(45,212,191,.3); }
+  .grupo.laranja { --g1: rgba(194,108,40,.32); --g2: rgba(40,28,30,.7); --glow: rgba(251,146,60,.5); --tile: linear-gradient(135deg,#fdba74,#f97316); --acc: #fdba74; border-color: rgba(251,146,60,.3); }
+  .grupo.roxo { --g1: rgba(124,58,237,.4); --g2: rgba(46,26,92,.6); --glow: rgba(167,139,250,.5); --tile: linear-gradient(135deg,#a78bfa,#7c3aed); --acc: #c4b5fd; border-color: rgba(167,139,250,.35); }
+  .grupo .topo { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; position: relative; z-index: 1; }
+  .tile { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: var(--tile); color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.3); flex-shrink: 0; }
+  .tile svg { width: 28px; height: 28px; }
+  .grupo h2 { margin: 0; font-size: 21px; letter-spacing: -.01em; }
+  .grupo .desc { color: rgba(238,241,251,.72); font-size: 14px; }
+  .itens { display: grid; gap: 12px; position: relative; z-index: 1; }
+  /* lado a lado quando cabe; empilha quando a coluna fica estreita */
+  .itens.duplo { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+
+  .item {
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; font: inherit; color: var(--text);
+    background: rgba(8,12,28,.42); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; padding: 16px;
+    cursor: pointer; transition: transform .15s, border-color .15s, background .15s;
+  }
+  .item:hover:not(:disabled) { border-color: var(--acc); background: rgba(8,12,28,.6); transform: translateY(-1px); }
+  .item:disabled { cursor: not-allowed; }
+  .item:disabled .item-txt, .item:disabled .mini { opacity: .55; }
+  .mini { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; color: var(--acc); background: rgba(255,255,255,.07); }
+  .mini svg { width: 22px; height: 22px; }
+  .grupo.verde .mini, .grupo.laranja .mini { background: var(--tile); color: #fff; }
+  .item-txt { flex: 1; min-width: 0; }
+  .item-nome { font-weight: 700; font-size: 15.5px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .item-motivo { color: rgba(238,241,251,.68); font-size: 13.5px; line-height: 1.35; }
+  .conta { font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: rgba(255,255,255,.1); color: var(--acc); }
+  .seta { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; background: rgba(255,255,255,.08); color: #fff; }
+  .seta svg { width: 18px; height: 18px; }
+  .item.atual { border-color: var(--run); box-shadow: 0 0 0 1px var(--run), 0 0 24px rgba(251,191,36,.25); }
+  .item.atual .seta { background: rgba(251,191,36,.18); color: var(--run); }
+  .item.atual .seta svg { animation: gira 1s linear infinite; }
+
+  /* execução */
+  .painel { background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.02)); border: 1px solid var(--line); border-radius: 22px; padding: 22px 24px; margin-bottom: 20px; }
+  .painel h3 { margin: 0 0 14px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .exec-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; }
+  .resumo { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; margin-bottom: 14px; }
+  .resumo .qual { font-weight: 700; font-size: 17px; }
+  .status { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; font-weight: 700; font-size: 13px; background: rgba(255,255,255,.08); color: var(--muted); }
+  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .status.rodando { background: rgba(251,191,36,.14); color: var(--run); }
+  .status.passou { background: rgba(52,211,153,.14); color: var(--ok); }
+  .status.falhou, .status.parado { background: rgba(248,113,113,.14); color: var(--err); }
+  .tempo { color: var(--muted); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+
+  ol.etapas { list-style: none; margin: 0; padding: 0; }
+  ol.etapas li { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); }
+  ol.etapas li:first-child { border-top: 0; }
+  .ic { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 800; border: 2px solid rgba(255,255,255,.18); color: var(--muted); margin-top: 1px; }
+  li.rodando .ic { border-color: var(--run); border-top-color: transparent; animation: gira 1s linear infinite; }
+  li.ok .ic { background: var(--ok); border-color: var(--ok); color: #052e1f; }
+  li.erro .ic { background: var(--err); border-color: var(--err); color: #3b0a0a; }
+  li.erro .titulo { color: var(--err); font-weight: 600; }
+  .dur { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .msg-erro { grid-column: 2 / 4; white-space: pre-wrap; font: 12.5px/1.45 ui-monospace, Consolas, monospace; background: rgba(248,113,113,.1); color: #fecaca; border: 1px solid rgba(248,113,113,.25); border-radius: 10px; padding: 10px 12px; margin-top: 6px; overflow-x: auto; }
+  @keyframes gira { to { transform: rotate(360deg); } }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  td { padding: 8px 0; border-top: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+  td:first-child { color: var(--muted); width: 42%; padding-right: 12px; }
+  tr:first-child td { border-top: 0; }
+  .vazio { color: var(--faint); }
+  .print img { max-width: 100%; border: 1px solid var(--line); border-radius: 12px; margin-top: 10px; }
+  details summary { cursor: pointer; font-weight: 600; color: var(--muted); }
+  pre.log { background: rgba(0,0,0,.35); color: #c7d2fe; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; height: 320px; overflow: auto; font: 12px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; margin: 12px 0 0; }
+
+  /* seletor de ambiente (HML / DEV) */
+  .ambiente { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.04); }
+  .ambiente .rot-amb { color: var(--muted); font-size: 13px; font-weight: 600; padding: 0 8px 0 10px; }
+  .ambiente button { font: inherit; font-weight: 700; font-size: 13.5px; letter-spacing: .04em; color: var(--muted); background: transparent; border: 0; border-radius: 9px; padding: 7px 14px; cursor: pointer; }
+  .ambiente button:hover:not(:disabled) { color: var(--text); background: rgba(255,255,255,.06); }
+  .ambiente button[aria-checked="true"][data-amb="hml"] { color: #052e1f; background: linear-gradient(135deg, #34d399, #14b8a6); }
+  .ambiente button[aria-checked="true"][data-amb="dev"] { color: #3a1d05; background: linear-gradient(135deg, #fdba74, #f97316); }
+  .ambiente button:disabled { cursor: not-allowed; }
+  .ambiente button:disabled:not([aria-checked="true"]) { opacity: .45; }
+  .val.amb-hml { color: #34d399; } .val.amb-dev { color: #fb923c; }
+
+  /* toggle "Mostrar browser" */
+  .toggle {
+    display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14.5px; cursor: pointer; user-select: none;
+    padding: 9px 14px 9px 16px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.04);
+  }
+  .toggle:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); }
+  .toggle svg { width: 20px; height: 20px; color: var(--muted); }
+  .toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .trilho { width: 40px; height: 24px; border-radius: 99px; background: rgba(255,255,255,.14); position: relative; transition: background .15s; flex-shrink: 0; }
+  .trilho::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #cbd2e6; transition: transform .15s, background .15s; }
+  .toggle input:checked ~ .trilho { background: linear-gradient(135deg, #34d399, #14b8a6); }
+  .toggle input:checked ~ .trilho::after { transform: translateX(16px); background: #fff; }
+  .toggle input:checked ~ svg { color: var(--ok); }
+  .toggle input:focus-visible ~ .trilho { outline: 2px solid #93c5fd; outline-offset: 2px; }
+  .modo { font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.06); color: var(--muted); }
+
+  /* guia "Como usar" */
+  .btn.guia { color: #c4b5fd; border-color: rgba(167,139,250,.35); background: rgba(139,92,246,.1); }
+  .btn.guia:hover { background: rgba(139,92,246,.18); border-color: rgba(167,139,250,.55); }
+  dialog.guia {
+    width: min(640px, calc(100vw - 32px)); padding: 0; border-radius: 22px; color: var(--text);
+    border: 1px solid rgba(167,139,250,.35); background: linear-gradient(160deg, #1b1640, #0d1430 65%);
+    box-shadow: 0 30px 80px rgba(0,0,0,.55);
+  }
+  dialog.guia::backdrop { background: rgba(5,8,20,.7); backdrop-filter: blur(4px); }
+  dialog.guia[open] { animation: surge .18s ease-out; }
+  @keyframes surge { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+  .guia-corpo { padding: 26px 28px 22px; }
+  .guia-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .guia-topo h2 { margin: 0; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .fechar { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; color: var(--muted); background: rgba(255,255,255,.05); border: 1px solid var(--line); }
+  .fechar:hover { color: var(--text); background: rgba(255,255,255,.1); }
+  .fechar svg { width: 18px; height: 18px; }
+  .trilha { display: flex; gap: 8px; margin-bottom: 22px; }
+  .trilha button { flex: 1; height: 6px; padding: 0; border: 0; border-radius: 99px; cursor: pointer; background: rgba(255,255,255,.1); }
+  .trilha button.feito { background: rgba(167,139,250,.5); }
+  .trilha button.atual { background: linear-gradient(90deg, #a78bfa, #60a5fa); }
+  .passo { display: none; }
+  .passo.on { display: block; }
+  .passo-cab { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .passo-num { font-size: 12.5px; font-weight: 700; color: #c4b5fd; }
+  .passo h3 { margin: 2px 0 0; font-size: 21px; letter-spacing: -.01em; }
+  .passo p { margin: 0 0 12px; color: rgba(238,241,251,.82); }
+  .passo ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .passo li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 14px; color: rgba(238,241,251,.8); }
+  .passo li svg { width: 16px; height: 16px; margin-top: 3px; color: var(--ok); }
+  .passo b { color: var(--text); }
+  .dica { margin-top: 14px; padding: 10px 14px; border-radius: 12px; font-size: 13.5px; background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25); color: #fde68a; }
+  .guia-rodape { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 28px; border-top: 1px solid var(--line); background: rgba(0,0,0,.15); }
+  .guia-rodape .cont { color: var(--muted); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .guia-rodape .btns { display: flex; gap: 10px; }
+  .btn.primario { border-color: transparent; background: linear-gradient(135deg, #8b5cf6, #3b82f6); }
+  .btn.primario:hover { background: linear-gradient(135deg, #9d74f8, #5592f7); }
+  .guia-rodape .btn { padding: 10px 16px; }
+
+  @media (max-width: 1100px) {
+    .grupos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .exec-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    main { padding: 24px 16px 40px; }
+    .grupos { grid-template-columns: 1fr; }
+    .marca { gap: 14px; } .marca .pulso { width: 44px; }
+    .acoes { width: 100%; } .acoes .btn { flex: 1; justify-content: center; padding: 11px 12px; }
+    .ind { flex-basis: 50%; padding: 8px 10px; gap: 10px; }
+    .ind svg { width: 22px; height: 22px; }
+    .ind .val { font-size: 15.5px; }
+    .ind + .ind::before { display: none; }
+    td:first-child { width: 45%; }
+  }
+</style>
+</head>
+<body>
+<div class="arco a1"></div><div class="arco a2"></div>
+
+<!-- ícones (lucide-like) -->
+<!-- sprite fora da tela (com display:none o gradiente do pulso não renderiza) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gPulso" x1="0" x2="1"><stop offset="0" stop-color="#a855f7"/><stop offset="1" stop-color="#3b82f6"/></linearGradient>
+  </defs>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path class="i" d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/><path class="i" d="M21 3v5h-5"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path class="i" d="M3 3v18h18"/><path class="i" d="M7 16v-3M11 16V9M15 16v-5M19 16V6"/></symbol>
+  <symbol id="i-sair" viewBox="0 0 24 24"><path class="i" d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path class="i" d="M3 12h11M7 8l-4 4 4 4"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path class="i" d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+  <symbol id="i-relogio" viewBox="0 0 24 24"><circle class="i" cx="12" cy="12" r="9"/><path class="i" d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-camadas" viewBox="0 0 24 24"><path class="i" d="m12 3 9 5-9 5-9-5z"/><path class="i" d="m3 13 9 5 9-5"/><path class="i" d="m3 17 9 5 9-5" opacity=".6"/></symbol>
+  <symbol id="i-predio" viewBox="0 0 24 24"><path class="i" d="M4 21V5l8-3v19M12 21h8V9l-8-3"/><path class="i" d="M7 8h2M7 12h2M7 16h2M15 12h2M15 16h2"/></symbol>
+  <symbol id="i-pessoa" viewBox="0 0 24 24"><circle class="i" cx="12" cy="8" r="4"/><path class="i" d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24"><rect class="i" x="3" y="5" width="18" height="16" rx="2"/><path class="i" d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-prancheta" viewBox="0 0 24 24"><rect class="i" x="5" y="4" width="14" height="17" rx="2"/><path class="i" d="M9 3h6v3H9z"/><path class="i" d="m9 13 2 2 4-4"/></symbol>
+  <symbol id="i-troca" viewBox="0 0 24 24"><path class="i" d="M4 8h14l-4-4M20 16H6l4 4"/></symbol>
+  <symbol id="i-cama" viewBox="0 0 24 24"><path class="i" d="M3 7v12M3 15h18v4M21 15v-3a3 3 0 0 0-3-3h-7v6"/><circle class="i" cx="7" cy="11" r="2"/></symbol>
+  <symbol id="i-ciclo" viewBox="0 0 24 24"><path class="i" d="M20 12a8 8 0 0 1-14 5.3M4 12a8 8 0 0 1 14-5.3"/><path class="i" d="M18 3v4h-4M6 21v-4h4"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path class="i" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path class="i" d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-maos" viewBox="0 0 24 24"><circle class="i" cx="9" cy="7" r="3"/><circle class="i" cx="17" cy="9" r="2.5"/><path class="i" d="M3 20c.8-3.5 3.2-5.5 6-5.5s5.2 2 6 5.5M15 15.5c2.6-.3 4.8 1.4 5.5 4.5"/></symbol>
+  <symbol id="i-esteto" viewBox="0 0 24 24"><path class="i" d="M6 3v6a4 4 0 0 0 8 0V3"/><path class="i" d="M10 13v3a5 5 0 0 0 10 0v-2"/><circle class="i" cx="20" cy="12" r="2"/></symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24"><path class="i" d="M12 3 2 20h20z"/><path class="i" d="M12 10v4M12 17h.01"/></symbol>
+  <symbol id="i-mais" viewBox="0 0 24 24"><path class="i" d="M12 5v14M5 12h14" stroke-width="2.6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path class="i" d="m5 12 5 5L20 7" stroke-width="2.6"/></symbol>
+  <symbol id="i-seta" viewBox="0 0 24 24"><path class="i" d="m9 6 6 6-6 6" stroke-width="2.4"/></symbol>
+  <symbol id="i-gira" viewBox="0 0 24 24"><path class="i" d="M21 12a9 9 0 1 1-6.2-8.55" stroke-width="2.4"/></symbol>
+  <symbol id="i-ajuda" viewBox="0 0 24 24"><circle class="i" cx="12" cy="12" r="9"/><path class="i" d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path class="i" d="M6 6l12 12M18 6 6 18" stroke-width="2.4"/></symbol>
+  <symbol id="i-chave" viewBox="0 0 24 24"><circle class="i" cx="8" cy="15" r="4"/><path class="i" d="m10.8 12.2 8.7-8.7M16 7l3 3M14 9l2 2"/></symbol>
+  <symbol id="i-servidor" viewBox="0 0 24 24"><rect class="i" x="3" y="4" width="18" height="7" rx="2"/><rect class="i" x="3" y="13" width="18" height="7" rx="2"/><path class="i" d="M7 7.5h.01M7 16.5h.01"/></symbol>
+  <symbol id="i-olho" viewBox="0 0 24 24"><path class="i" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle class="i" cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-escudo" viewBox="0 0 24 24"><path class="i" d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/><path class="i" d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><circle class="i" cx="12" cy="12" r="9"/><path class="i" d="m10 8.5 5.5 3.5-5.5 3.5z"/></symbol>
+</svg>
+
+<main>
+  <header>
+    <div class="marca">
+      <svg class="pulso" viewBox="0 0 64 44"><path d="M2 24h12l5-12 8 26 7-30 6 22 4-6h18" fill="none" stroke="url(#gPulso)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div>
+        <h1>Fluxos da Auditoria Clínica</h1>
+        <div class="sub">Acesse os fluxos disponíveis para auditoria, transição de cuidado e acompanhamento.</div>
+      </div>
+    </div>
+    <div class="acoes">
+      <button id="btnGuia" class="btn guia" title="Passo a passo para usar o painel"><svg><use href="#i-ajuda"/></svg>Como usar</button>
+      <div class="ambiente" role="radiogroup" aria-label="Ambiente das aplicações" title="Ambiente da Auditoria Clínica e do Transição de Cuidado. O SAE é sempre o HML01.">
+        <span class="rot-amb">Ambiente</span>
+        <button role="radio" data-amb="hml" aria-checked="true">HML</button>
+        <button role="radio" data-amb="dev" aria-checked="false">DEV</button>
+      </div>
+      <label class="toggle" title="Ligado: os fluxos abrem uma janela do browser para você acompanhar. Desligado: rodam escondidos. Vale para a próxima execução; o login sempre abre a janela.">
+        <input type="checkbox" id="chkMostrar" checked>
+        <svg><use href="#i-olho"/></svg>Mostrar browser<span class="trilho"></span>
+      </label>
+      <button id="btnLogin" class="btn" title="Abre o navegador para você fazer login nas três aplicações"><svg><use href="#i-refresh"/></svg>Renovar login</button>
+      <button id="btnRelatorio" class="btn" disabled title="Relatório do Playwright: etapas, prints, vídeo e trace de cada ação"><svg><use href="#i-chart"/></svg>Abrir relatório</button>
+      <button id="btnParar" class="btn perigo" disabled><svg><use href="#i-sair"/></svg>Parar</button>
+    </div>
+  </header>
+
+  <div id="aviso" class="aviso"></div>
+
+  <section class="indicadores" id="indicadores" aria-label="Resumo"></section>
+
+  <section class="grupos" id="grupos" aria-label="Fluxos"></section>
+
+  <section class="painel">
+    <div class="exec-grid">
+      <div>
+        <h3 id="tituloEtapas">Execução</h3>
+        <div class="resumo">
+          <span id="qual" class="qual"></span>
+          <span id="status" class="status">Nenhuma execução</span>
+          <span id="tempo" class="tempo"></span>
+          <span id="quando" class="tempo"></span>
+          <span id="modo" class="modo" hidden></span>
+        </div>
+        <ol id="etapas" class="etapas"></ol>
+      </div>
+      <div id="cardResultado" hidden>
+        <h3>Resultado</h3>
+        <table id="anotacoes"></table>
+        <div id="print" class="print"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="painel">
+    <details id="detLog">
+      <summary>Log da execução</summary>
+      <pre id="log" class="log"></pre>
+    </details>
+  </section>
+</main>
+
+<dialog id="guia" class="guia" aria-labelledby="guiaTitulo">
+  <div class="guia-corpo">
+    <div class="guia-topo">
+      <h2 id="guiaTitulo">Como usar o painel</h2>
+      <button class="fechar" id="guiaFechar" aria-label="Fechar"><svg><use href="#i-x"/></svg></button>
+    </div>
+    <div class="trilha" id="guiaTrilha"></div>
+
+    <section class="passo">
+      <div class="passo-cab">
+        <div class="tile" style="--tile: linear-gradient(135deg,#a78bfa,#7c3aed)"><svg><use href="#i-escudo"/></svg></div>
+        <div><div class="passo-num">Passo 1 de 3</div><h3>Logue na VPN da UnimedPOA</h3></div>
+      </div>
+      <p>Os fluxos acessam o <b>SAE</b>, a <b>Auditoria Clínica</b> e o <b>Transição de Cuidado</b> de homologação, que só respondem pela rede da Unimed.</p>
+      <div class="dica">Sem a VPN, os fluxos param logo no começo por tempo esgotado.</div>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab">
+        <div class="tile" style="--tile: linear-gradient(135deg,#fdba74,#f97316)"><svg><use href="#i-chave"/></svg></div>
+        <div><div class="passo-num">Passo 2 de 3</div><h3>Faça login no SAE quando requisitado</h3></div>
+      </div>
+      <p>Na primeira vez, ou quando um fluxo falhar pedindo login, clique em <b>Renovar login</b>: abre um navegador para você entrar com o seu usuário.</p>
+      <ul>
+        <li><svg><use href="#i-check"/></svg><span>Se pedir, entre também na Auditoria e no Transição (login Microsoft).</span></li>
+        <li><svg><use href="#i-check"/></svg><span>Quando terminar, o navegador fecha sozinho e a sessão fica salva.</span></li>
+      </ul>
+    </section>
+
+    <section class="passo">
+      <div class="passo-cab">
+        <div class="tile" style="--tile: linear-gradient(135deg,#60a5fa,#3b82f6)"><svg><use href="#i-play"/></svg></div>
+        <div><div class="passo-num">Passo 3 de 3</div><h3>Realize os fluxos pelos botões indicados e confira os resultados!</h3></div>
+      </div>
+      <ul>
+        <li><svg><use href="#i-check"/></svg><span>Escolha o <b>Ambiente</b> no topo: HML ou DEV (vale para a Auditoria e o Transição; o SAE é sempre o HML01).</span></li>
+        <li><svg><use href="#i-check"/></svg><span>Comece por <b>Criar internação</b>. Os questionários e a desosp usam essa internação.</span></li>
+        <li><svg><use href="#i-check"/></svg><span>Roda um fluxo por vez. As etapas, o resultado e o print aparecem em <b>Execução</b>; <b>Abrir relatório</b> traz vídeo e trace.</span></li>
+        <li><svg><use href="#i-check"/></svg><span><b>Mostrar browser</b> ligado abre a janela para você acompanhar; desligado, o fluxo roda escondido. O login sempre aparece.</span></li>
+        <li><svg><use href="#i-check"/></svg><span>No fim, <b>Finalizar internação</b> dá alta no SAE e libera uma nova.</span></li>
+      </ul>
+      <div class="dica">Um aviso no resultado não é falha: o fluxo passou, mas registrou algo para conferir.</div>
+    </section>
+  </div>
+  <div class="guia-rodape">
+    <span class="cont" id="guiaCont"></span>
+    <div class="btns">
+      <button class="btn" id="guiaVoltar">Voltar</button>
+      <button class="btn primario" id="guiaProximo">Próximo</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const ROTULOS = { rodando: 'Rodando…', passou: 'Passou', falhou: 'Falhou', parado: 'Parado' };
+const NOMES_ANOTACAO = {
+  ambiente: 'Ambiente', 'codigo-internacao': 'Código da internação (SAE)', 'atendimento-sae': 'Nº de atendimento (SAE)',
+  'internacao-auditoria': 'Internação na Auditoria', 'internacao-sae': 'Id da internação no SAE',
+  'id-desosp-sae': 'Id da desospitalização no SAE', 'auditoria-atendimento': 'Atendimento na Auditoria',
+  limpeza: 'Limpeza (passo 0)', 'data-internacao': 'Data da internação', transicao: 'Transição', trava: 'Trava',
+  'servico-social': 'Avaliação (marcador)', 'retorno-envio': 'Retorno do envio', 'sae-servico-social': 'Avaliação no SAE', 'protocolo-crm': 'Protocolo CRM',
+  hospitalista: 'Avaliação (marcador)', 'sae-hospitalista': 'Avaliação no SAE',
+  visita: 'Avaliação (marcador)', 'sae-visita': 'Avaliação no SAE',
+  inconformidade: 'Inconformidades (marcador)', 'sae-inconformidade': 'Inconformidades no SAE',
+  'retorno-visita': 'Retorno (Visita)', 'retorno-acomodacao': 'Retorno (Acomodação)', 'retorno-material': 'Retorno (Material)', 'retorno-medicamento': 'Retorno (Medicamento)', sync: 'Sync do hospital', alta: 'Alta registrada', aviso: 'Aviso',
+};
+// Grupos e itens do painel (ids = fluxos do servidor)
+const GRUPOS = [
+  { cor: 'azul', icone: 'prancheta', titulo: 'Avaliações', desc: 'Questionários de evolução e acompanhamento', itens: [
+    { id: 'visita', icone: 'doc', conta: (i) => i?.visita?.length },
+    { id: 'servicoSocial', icone: 'maos', conta: (i) => i?.servicoSocial?.length },
+    { id: 'hospitalista', icone: 'esteto', conta: (i) => i?.hospitalista?.length },
+    { id: 'inconformidade', icone: 'alerta', conta: (i) => i?.inconformidade?.length },
+  ] },
+  { cor: 'verde', icone: 'troca', titulo: 'Desosp', desc: 'Auditoria e Transição de Cuidado', itens: [
+    { id: 'desosp', icone: 'mais', extra: (i) => i?.desosp ? ETAPA_DESOSP[i.desosp.etapa] : '' },
+  ] },
+  { cor: 'laranja', icone: 'cama', titulo: 'Internação', desc: 'Gestão do ciclo de internação', duplo: true, itens: [
+    { id: 'criar', icone: 'mais' }, { id: 'finalizar', icone: 'check' },
+  ] },
+  { cor: 'roxo', icone: 'ciclo', titulo: 'Ciclo Completo', desc: 'Realize todo o fluxo de ponta a ponta', itens: [
+    { id: 'e2e', icone: 'check', motivoLivre: 'Cria, desospitaliza e finaliza numa execução só' },
+  ] },
+];
+const ETAPA_DESOSP = { enviada: 'enviada', atribuida: 'atribuída', aprovada: 'aprovada', confirmada: 'confirmada' };
+let ambiente = 'hml', ambientes = { hml: 'HML', dev: 'DEV' }, fluxos = {}, internacao = null, estado = {}, inicio = null, fim = null, relogio = null, projetoAtual = 'criar', temRelatorio = false, rodandoAgora = false;
+
+const fmt = (ms) => { const s = Math.round(ms / 1000); return s < 60 ? `${s}s` : `${Math.floor(s / 60)}min ${String(s % 60).padStart(2, '0')}s`; };
+const icone = (nome) => `<svg><use href="#i-${nome}"/></svg>`;
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+
+function quandoCurto(t) {
+  if (!t) return '—';
+  const d = new Date(t), hoje = new Date();
+  const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return d.toDateString() === hoje.toDateString() ? `Hoje, ${hora}` : `${d.toLocaleDateString('pt-BR')}, ${hora}`;
+}
+
+function desenharIndicadores() {
+  const i = internacao;
+  const box = $('indicadores');
+  box.innerHTML = '';
+  const ind = (ic, cor, rot, val, clsVal = '') => {
+    const d = el('div', 'ind', `<span class="${cor}">${icone(ic)}</span><div><div class="rot"></div><div class="val ${clsVal}"></div></div>`);
+    d.querySelector('.rot').textContent = rot; d.querySelector('.val').textContent = val;
+    box.appendChild(d);
+  };
+  const total = Object.keys(fluxos).filter((k) => k !== 'setup').length;
+  ind('servidor', ambiente === 'dev' ? 'c-orange' : 'c-teal', 'Ambiente', ambientes[ambiente] || ambiente, 'amb-' + ambiente);
+  ind('zap', 'c-yellow', 'Fluxos ativos', String(total));
+  ind('relogio', 'c-blue', 'Última execução', quandoCurto(inicio));
+  if (!i) { ind('camadas', 'c-teal', 'Internação', 'Nenhuma em uso', 'livre'); return; }
+  ind('camadas', 'c-teal', 'Código', i.codigo);
+  ind('predio', 'c-indigo', 'Atendimento', i.atendimento);
+  ind('pessoa', 'c-blue', 'Auditoria', i.internacaoIdAuditoria || 'pendente');
+  if (i.dataInternacao) ind('calendario', 'c-orange', 'Internada em', i.dataInternacao.split('-').reverse().join('/'));
+}
+
+function desenharFluxos() {
+  desenharIndicadores();
+  const box = $('grupos');
+  box.innerHTML = '';
+  for (const g of GRUPOS) {
+    const itens = g.itens.filter((it) => fluxos[it.id]);
+    if (!itens.length) continue;
+    const card = el('article', 'grupo ' + g.cor);
+    const topo = el('div', 'topo', `<div class="tile">${icone(g.icone)}</div><div><h2></h2><div class="desc"></div></div>`);
+    topo.querySelector('h2').textContent = g.titulo; topo.querySelector('.desc').textContent = g.desc;
+    card.appendChild(topo);
+    const lista = el('div', 'itens' + (g.duplo ? ' duplo' : ''));
+    for (const it of itens) {
+      const f = fluxos[it.id];
+      const livre = !f.bloqueio && !rodandoAgora;
+      const atual = rodandoAgora && it.id === projetoAtual;
+      const b = el('button', 'item' + (atual ? ' atual' : ''),
+        `<span class="mini">${icone(it.icone)}</span><span class="item-txt"><span class="item-nome"></span><span class="item-motivo"></span></span><span class="seta">${icone(atual ? 'gira' : 'seta')}</span>`);
+      b.disabled = !livre;
+      const nome = b.querySelector('.item-nome');
+      nome.textContent = f.nome.replace(' (4 tipos)', '');
+      const n = it.conta?.(internacao), extra = it.extra?.(internacao);
+      if (n) nome.appendChild(el('span', 'conta', `${n} enviada${n > 1 ? 's' : ''}`));
+      if (extra) { const c = el('span', 'conta'); c.textContent = extra; nome.appendChild(c); }
+      // motivo curto no card (1ª frase, sem parênteses); o texto completo fica no tooltip
+      const curto = (t) => t.replace(/\s*\([^)]*\)/g, '').split(/(?<=\.)\s/)[0];
+      b.querySelector('.item-motivo').textContent = rodandoAgora
+        ? (atual ? 'Rodando…' : 'Aguarde a execução atual')
+        : (f.bloqueio ? curto(f.bloqueio) : it.motivoLivre || 'Pronto para rodar');
+      b.title = f.bloqueio || 'Rodar ' + f.nome;
+      b.onclick = () => iniciar(it.id);
+      lista.appendChild(b);
+    }
+    card.appendChild(lista);
+    box.appendChild(card);
+  }
+}
+
+function desenharEtapas() {
+  const ol = $('etapas');
+  ol.innerHTML = '';
+  if (projetoAtual === 'setup') {
+    $('tituloEtapas').textContent = 'Execução · Renovar login';
+    ol.innerHTML = '<li><span class="ic">i</span><span>Login manual: faça o login no SAE, na Auditoria e no Transição na janela que abriu.</span><span></span></li>';
+    return;
+  }
+  const f = fluxos[projetoAtual];
+  $('tituloEtapas').textContent = f ? 'Execução · ' + f.nome : 'Execução';
+  for (const t of (f?.etapas || [])) {
+    const e = estado[t] || {};
+    const li = document.createElement('li');
+    li.className = e.status || '';
+    li.innerHTML = `<span class="ic">${e.status === 'ok' ? '✓' : e.status === 'erro' ? '!' : ''}</span><span class="titulo"></span><span class="dur">${e.ms != null ? fmt(e.ms) : ''}</span>`;
+    li.querySelector('.titulo').textContent = t;
+    if (e.erro) { const p = el('div', 'msg-erro'); p.textContent = e.erro; li.appendChild(p); }
+    ol.appendChild(li);
+  }
+}
+
+function setStatus(s) {
+  const st = $('status');
+  st.className = 'status ' + (s || '');
+  st.textContent = ROTULOS[s] || 'Nenhuma execução';
+  const rodando = s === 'rodando';
+  rodandoAgora = rodando;
+  $('btnLogin').disabled = rodando; $('btnParar').disabled = !rodando;
+  desenharAmbiente();
+  desenharFluxos();
+  // o relatório é reescrito a cada execução: só abre quando não está rodando
+  $('btnRelatorio').disabled = rodando || !temRelatorio;
+  clearInterval(relogio);
+  if (rodando) relogio = setInterval(atualizarTempo, 1000);
+  atualizarTempo();
+}
+
+async function carregarEstado() {
+  const s = await (await fetch('/api/estado')).json();
+  fluxos = s.fluxos; internacao = s.internacao; temRelatorio = !!s.temRelatorio;
+  if (s.ambiente) { ambiente = s.ambiente; ambientes = s.ambientes || ambientes; }
+  desenharAmbiente();
+  return s;
+}
+
+function atualizarTempo() {
+  $('qual').textContent = fluxos[projetoAtual] && inicio ? fluxos[projetoAtual].nome : '';
+  if (!inicio) { $('tempo').textContent = ''; return; }
+  $('tempo').textContent = 'Duração: ' + fmt((fim || Date.now()) - inicio);
+  $('quando').textContent = 'Início: ' + new Date(inicio).toLocaleString('pt-BR');
+}
+
+function logar(texto, erro) {
+  const pre = $('log');
+  const fundo = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 20;
+  const span = document.createElement('span');
+  if (erro) span.style.color = 'var(--err)';
+  span.textContent = texto.endsWith('\n') ? texto : texto + '\n';
+  pre.appendChild(span);
+  if (fundo) pre.scrollTop = pre.scrollHeight;
+}
+
+function mostrarResultado(ev) {
+  $('cardResultado').hidden = false;
+  const tb = $('anotacoes');
+  tb.innerHTML = '';
+  for (const a of ev.anotacoes || []) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td></td><td></td>';
+    tr.children[0].textContent = NOMES_ANOTACAO[a.type] || a.type;
+    tr.children[1].textContent = a.description || '';
+    tb.appendChild(tr);
+  }
+  if (!tb.children.length) tb.innerHTML = '<tr><td class="vazio" colspan="2">Sem anotações.</td></tr>';
+  $('print').innerHTML = '';
+  for (const p of ev.prints || []) {
+    const img = document.createElement('img');
+    img.alt = 'Tela no momento da falha';
+    img.src = '/api/print?caminho=' + encodeURIComponent(p);
+    $('print').appendChild(img);
+  }
+}
+
+function aplicar(ev) {
+  switch (ev.tipo) {
+    case 'execucao':
+      projetoAtual = ev.projeto || projetoAtual;
+      if (ev.status === 'rodando' && 'oculto' in ev) {
+        $('modo').hidden = false;
+        $('modo').textContent = (ev.ambiente ? (ambientes[ev.ambiente] || ev.ambiente) + ' · ' : '') + (ev.oculto ? 'Browser oculto' : 'Browser visível');
+      }
+      if (ev.status === 'rodando') { inicio = ev.t; fim = null; estado = {}; $('log').textContent = ''; $('cardResultado').hidden = true; $('aviso').className = 'aviso'; }
+      else { fim = ev.t; $('aviso').className = 'aviso'; temRelatorio = true; }
+      setStatus(ev.status); desenharEtapas();
+      // terminou ao vivo: a trava pode ter mudado (internação criada/finalizada)
+      if (ev.status !== 'rodando' && ev.aoVivo) carregarEstado().then(() => { setStatus(ev.status); desenharEtapas(); });
+      break;
+    case 'etapa-inicio': estado[ev.titulo] = { status: 'rodando' }; desenharEtapas(); break;
+    case 'etapa-fim': estado[ev.titulo] = { status: ev.erro ? 'erro' : 'ok', ms: ev.ms, erro: ev.erro }; desenharEtapas(); break;
+    case 'teste-fim': mostrarResultado(ev); if (ev.erro && !Object.values(estado).some((e) => e.erro)) logar(ev.erro, true); break;
+    case 'log':
+      logar(ev.texto, ev.erro);
+      if (/>>>.*login/i.test(ev.texto)) { $('aviso').textContent = ev.texto.replace(/^>>>\s*/, '').trim(); $('aviso').className = 'aviso on'; }
+      if (/SAE logado|logado\./i.test(ev.texto)) $('aviso').className = 'aviso';
+      break;
+  }
+}
+
+async function iniciar(fluxo) {
+  if (fluxo === 'finalizar' && !confirm('Finalizar no SAE a internação em uso (código ' + (internacao?.codigo || '?') + ')?')) return;
+  const mostrar = $('chkMostrar').checked ? '1' : '0';
+  const r = await fetch('/api/rodar?fluxo=' + fluxo + '&mostrar=' + mostrar, { method: 'POST', headers: { 'x-painel': '1' } });
+  if (!r.ok) alert((await r.json()).erro || 'Não foi possível iniciar.');
+}
+
+// seletor de ambiente: guardado no servidor (vale para todos os fluxos)
+function desenharAmbiente() {
+  document.querySelectorAll('.ambiente button').forEach((b) => {
+    b.setAttribute('aria-checked', String(b.dataset.amb === ambiente));
+    b.disabled = rodandoAgora;
+  });
+}
+document.querySelectorAll('.ambiente button').forEach((b) => b.onclick = async () => {
+  if (b.dataset.amb === ambiente) return;
+  const r = await fetch('/api/ambiente?valor=' + b.dataset.amb, { method: 'POST', headers: { 'x-painel': '1' } });
+  if (!r.ok) { alert((await r.json()).erro || 'Não foi possível trocar o ambiente.'); return; }
+  await carregarEstado();
+  desenharFluxos();
+});
+
+// "Mostrar browser": preferência deste navegador (o padrão é mostrar)
+try { $('chkMostrar').checked = localStorage.getItem('mostrarNavegador') !== '0'; } catch {}
+$('chkMostrar').onchange = () => { try { localStorage.setItem('mostrarNavegador', $('chkMostrar').checked ? '1' : '0'); } catch {} };
+
+// guia "Como usar"
+const passos = [...document.querySelectorAll('#guia .passo')];
+let passoAtual = 0;
+$('guiaTrilha').innerHTML = passos.map((_, i) => `<button aria-label="Passo ${i + 1}" data-i="${i}"></button>`).join('');
+function mostrarPasso(i) {
+  passoAtual = i;
+  passos.forEach((p, k) => p.classList.toggle('on', k === i));
+  [...$('guiaTrilha').children].forEach((b, k) => b.className = k === i ? 'atual' : k < i ? 'feito' : '');
+  $('guiaCont').textContent = `${i + 1} / ${passos.length}`;
+  $('guiaVoltar').disabled = i === 0;
+  $('guiaProximo').textContent = i === passos.length - 1 ? 'Entendi' : 'Próximo';
+}
+$('guiaTrilha').onclick = (e) => { if (e.target.dataset.i) mostrarPasso(Number(e.target.dataset.i)); };
+$('guiaVoltar').onclick = () => mostrarPasso(Math.max(0, passoAtual - 1));
+$('guiaProximo').onclick = () => passoAtual < passos.length - 1 ? mostrarPasso(passoAtual + 1) : $('guia').close();
+$('guiaFechar').onclick = () => $('guia').close();
+$('guia').onclick = (e) => { if (e.target === $('guia')) $('guia').close(); }; // clique fora
+$('guia').onkeydown = (e) => {
+  if (e.key === 'ArrowRight') $('guiaProximo').click();
+  if (e.key === 'ArrowLeft' && passoAtual > 0) mostrarPasso(passoAtual - 1);
+};
+$('btnGuia').onclick = () => { mostrarPasso(0); $('guia').showModal(); };
+
+$('btnLogin').onclick = () => iniciar('setup');
+$('btnRelatorio').onclick = () => window.open('/relatorio/index.html', '_blank');
+$('btnParar').onclick = async () => {
+  if (!confirm('Parar a execução? Se a internação já foi criada, ela continua em uso até rodar "Finalizar internação".')) return;
+  await fetch('/api/parar', { method: 'POST', headers: { 'x-painel': '1' } });
+};
+
+(async () => {
+  const s = await carregarEstado();
+  if (s.execucao) {
+    for (const ev of s.execucao.eventos) aplicar(ev);
+    if (!s.rodando && s.execucao.status === 'rodando') setStatus('parado');
+  } else { desenharEtapas(); setStatus(null); }
+  const ultimo = s.execucao?.eventos?.at(-1)?.t || 0;
+  const es = new EventSource('/api/eventos');
+  es.onmessage = (m) => { const ev = JSON.parse(m.data); ev.aoVivo = true; if (ev.t > ultimo) aplicar(ev); };
+})();
+</script>
+</body>
+</html>
