@@ -292,6 +292,7 @@
   <symbol id="i-escudo" viewBox="0 0 24 24"><path class="i" d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/><path class="i" d="m9 12 2 2 4-4"/></symbol>
   <symbol id="i-funil" viewBox="0 0 24 24"><path class="i" d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></symbol>
   <symbol id="i-engrenagem" viewBox="0 0 24 24"><circle class="i" cx="12" cy="12" r="3"/><path class="i" d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><circle class="i" cx="12" cy="12" r="9"/><path class="i" d="m10 8.5 5.5 3.5-5.5 3.5z"/></symbol>
 </svg>
 
@@ -310,8 +311,8 @@
         <button role="radio" data-amb="hml" aria-checked="true">HML</button>
         <button role="radio" data-amb="dev" aria-checked="false">DEV</button>
       </div>
-      <button id="btnParar" class="btn perigo" disabled><svg><use href="#i-sair"/></svg>Parar</button>
-      <button id="btnGuia" class="btn icone-so" title="Como usar: passo a passo do painel"><svg><use href="#i-ajuda"/></svg><span class="sr">Como usar</span></button>
+      <button id="btnParar" class="btn perigo icone-so" disabled title="Parar a execução"><svg><use href="#i-stop"/></svg><span class="sr">Parar</span></button>
+      <button id="btnGuia" class="btn guia icone-so" title="Como usar: passo a passo do painel"><svg><use href="#i-ajuda"/></svg><span class="sr">Como usar</span></button>
       <div class="config">
         <button id="btnConfig" class="btn icone-so" aria-haspopup="true" aria-expanded="false" aria-controls="menuConfig" title="Configurações"><svg><use href="#i-engrenagem"/></svg><span class="sr">Configurações</span></button>
         <div id="menuConfig" class="menu-config" role="menu" hidden>
